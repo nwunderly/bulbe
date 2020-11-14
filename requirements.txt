@@ -1,0 +1,5 @@
+discord.py
+PyYaml
+fastapi
+starlette
+uvicorn
