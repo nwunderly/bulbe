@@ -1,14 +1,14 @@
-import yaml
 import logging
 from argparse import ArgumentParser
 
-from bulbe import bot   # bulbe
-from github import app  # fastapi app for github integration
+import uvicorn
 
-from utils import checks
+from bulbe.bot import bot  # bulbe
+from github.app import app  # fastapi app for github integration
 from utils import auth
-from utils.utility import setup_logger, module_logger, HOME_DIR
+from utils.helpers import setup_logger
 
+logger = logging.getLogger('bot.launcher')
 
 
 def start_discord(args):
@@ -16,7 +16,7 @@ def start_discord(args):
     log = args.log
 
     if not log:
-        log = 'info' if 'prod' else 'debug'
+        log = 'info' if prod else 'debug'
 
     level = {
         'debug': logging.DEBUG,
@@ -24,8 +24,10 @@ def start_discord(args):
         'error': logging.ERROR,
     }[log]
 
-    logger = module_logger(name, "launcher", level)
-    module_logger(name, 'discord', logging.INFO)
+    setup_logger("bot", level)
+    setup_logger("cogs", level)
+    setup_logger("utils", level)
+    setup_logger('discord', logging.INFO)
 
     logger.info("Calling run method.")
     try:
@@ -41,8 +43,24 @@ def start_discord(args):
 
 
 def start_github(args):
-    debug = args.debug
+    prod = args.prod
     log = args.log
+
+    if not log:
+        log = 'info' if prod else 'debug'
+
+    level = {
+        'debug': logging.DEBUG,
+        'info': logging.INFO,
+        'error': logging.ERROR,
+    }[log]
+
+    setup_logger("bot", level)
+    setup_logger("cogs", level)
+    setup_logger("utils", level)
+    setup_logger('discord', logging.INFO)
+
+    uvicorn.run(app, host='0.0.0.0', port=9000)
 
 
 def main():

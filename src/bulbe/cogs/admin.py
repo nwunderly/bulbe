@@ -6,13 +6,19 @@ import contextlib
 import traceback
 import typing
 import copy
+import logging
 
+# noinspection PyPackageRequirements
 import discord
+# noinspection PyPackageRequirements
 from discord.ext import commands
 
 from utils import checks
 from utils import paginator
 from utils import converters
+
+
+logger = logging.getLogger('cogs.admin')
 
 
 class Admin(commands.Cog):
@@ -73,7 +79,7 @@ class Admin(commands.Cog):
         try:
             with contextlib.redirect_stdout(stdout):
                 ret = await func()
-        except Exception as e:
+        except Exception:
             value = stdout.getvalue()
             await ctx.send(f'```py\n{value}{traceback.format_exc()}\n```')
         else:
@@ -155,16 +161,6 @@ class Admin(commands.Cog):
 
         for i in range(times):
             await new_ctx.reinvoke()
-
-    # @commands.command()
-    # async def refresh(self, ctx):
-    #     await ctx.send("Clearing internal state...")
-    #     args = self.bot._init_args
-    #     kwargs = self.bot._init_kwargs
-    #     self.bot.clear()
-    #     self.bot.__init__(*args, **kwargs)
-    #     await self.bot.setup()
-    #     await ctx.send("Bot refreshed!")
 
 
 def setup(bot):

@@ -1,5 +1,7 @@
 import asyncio
+# noinspection PyPackageRequirements
 import discord
+# noinspection PyPackageRequirements
 from discord.ext.commands import Paginator as CommandPaginator
 
 
@@ -32,7 +34,8 @@ class Pages:
     permissions: discord.Permissions
         Our permissions for the channel.
     """
-    def __init__(self, ctx, *, entries, per_page=12, show_entry_count=True):
+
+    def __init__(self, ctx, *, entries, per_page=12, show_entry_count=True, color=None):
         self.bot = ctx.bot
         self.entries = entries
         self.message = ctx.message
@@ -43,12 +46,12 @@ class Pages:
         if left_over:
             pages += 1
         self.maximum_pages = pages
-        embed_color = None
-        try:
-            embed_color = self.bot.properties.embed_color
-        except AttributeError:
-            pass
-        self.embed = discord.Embed(colour=embed_color if embed_color else discord.Color.blurple())
+        if not color:
+            try:
+                color = self.bot.properties.embed_color
+            except AttributeError:
+                pass
+        self.embed = discord.Embed(colour=color or discord.Color.blurple())
         self.paginating = len(entries) > per_page
         self.show_entry_count = show_entry_count
         self.reaction_emojis = [
@@ -159,8 +162,7 @@ class Pages:
 
     async def numbered_page(self):
         """lets you type a page number to go to"""
-        to_delete = []
-        to_delete.append(await self.channel.send('What page do you want to go to?'))
+        to_delete = [await self.channel.send('What page do you want to go to?')]
 
         def message_check(m):
             return m.author == self.author and \
@@ -188,9 +190,8 @@ class Pages:
 
     async def show_help(self):
         """shows this message"""
-        messages = ['Welcome to the interactive paginator!\n']
-        messages.append('This interactively allows you to see pages of text by navigating with '
-                        'reactions. They are as follows:\n')
+        messages = ['Welcome to the interactive paginator!\n', 'This interactively allows you to see pages of text by navigating with '
+                                                               'reactions. They are as follows:\n']
 
         for (emoji, func) in self.reaction_emojis:
             messages.append(f'{emoji} {func.__doc__}')
@@ -241,15 +242,15 @@ class Pages:
                 self.paginating = False
                 try:
                     await self.message.clear_reactions()
-                except:
+                except Exception:
                     pass
                 finally:
                     break
 
             try:
                 await self.message.remove_reaction(reaction, user)
-            except:
-                pass # can't remove it so don't bother doing so
+            except Exception:
+                pass  # can't remove it so don't bother doing so
 
             await self.match()
 

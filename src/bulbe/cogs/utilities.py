@@ -3,15 +3,18 @@ import psutil
 import datetime
 from typing import Union
 
+# noinspection PyPackageRequirements
 import discord
+# noinspection PyPackageRequirements
 from discord.ext import commands
 
 from utils.converters import FetchedUser
-from utils.utility import status
+from utils.constants import status
 
 
 class PersistManager:
     """Conveniently handles guilds' rolePersist data."""
+
     def __init__(self, cog):
         self.cog = cog
         self.bot = cog.bot
@@ -145,14 +148,14 @@ class Utilities(commands.Cog):
             join_pos = order.index(user) + 1
 
             embed.add_field(name='Join Position', value=join_pos, inline=False)
-            embed.add_field(name='Roles', value=len(user.roles)-1, inline=False)
+            embed.add_field(name='Roles', value=len(user.roles) - 1, inline=False)
 
         embed.add_field(name='Created', value=f'{user.created_at:%m/%d/%Y}', inline=False)
 
         if isinstance(user, discord.Member):
             embed.add_field(name='Joined', value=f"{getattr(user, 'joined_at', None):%m/%d/%Y}", inline=False)
 
-            important_perms = ['manage_guild', 'manage_roles', 'manage_channels',  'ban_members', 'kick_members', 'manage_messages']
+            important_perms = ['manage_guild', 'manage_roles', 'manage_channels', 'ban_members', 'kick_members', 'manage_messages']
             owner = user.guild.owner == user
             admin = user.guild_permissions.administrator
             permissions = list(perm for perm in important_perms if getattr(user.guild_permissions, perm))
@@ -172,26 +175,27 @@ class Utilities(commands.Cog):
         embed.add_field(name="Library", value='discord.py')
         embed.add_field(name="OS", value={'linux': 'Ubuntu', 'win32': 'Windows'}[sys.platform])
 
-        dt = datetime.datetime.now()-self.bot.started_at
+        dt = datetime.datetime.now() - self.bot.started_at
         if dt.days >= 7:
-            uptime = f"{(_w := dt.days//7)} week" + ('s' if _w > 1 else '')
+            uptime = f"{(_w := dt.days // 7)} week" + ('s' if _w > 1 else '')
         elif dt.days >= 1:
             uptime = f"{(_d := dt.days)} day" + ('s' if _d > 1 else '')
         elif dt.seconds > 3599:
-            uptime = f"{(_h := dt.seconds//3600)} hour" + ('s' if _h > 1 else '')
+            uptime = f"{(_h := dt.seconds // 3600)} hour" + ('s' if _h > 1 else '')
         elif dt.seconds > 59:
-            uptime = f"{(_m := dt.seconds//60)} minute" + ('s' if _m > 1 else '')
+            uptime = f"{(_m := dt.seconds // 60)} minute" + ('s' if _m > 1 else '')
         else:
             uptime = f"{dt.seconds} seconds"
 
         embed.add_field(name="Uptime", value=uptime)
-        memory = int(psutil.Process().memory_info().rss//10**6)
+        memory = int(psutil.Process().memory_info().rss // 10 ** 6)
         embed.add_field(name="Memory", value=f"{memory} MB")
         embed.add_field(name="Servers", value=len(self.bot.guilds))
         embed.add_field(name="Users", value=len(self.bot.users))
 
         embed.add_field(name="Source", value='[github](https://github.com/nwunderly/RevBots)')
-        embed.add_field(name="Add me!", value='[invite](https://discordapp.com/oauth2/authorize?client_id=548178287013396532&scope=bot&permissions=2134207679)')
+        embed.add_field(name="Add me!",
+                        value='[invite](https://discordapp.com/oauth2/authorize?client_id=548178287013396532&scope=bot&permissions=2134207679)')
 
         embed.set_footer(text=f'bot by {self.bot._nwunder}', icon_url=self.bot._nwunder.avatar_url)
         embed.timestamp = self.bot.user.created_at

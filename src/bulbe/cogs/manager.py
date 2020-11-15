@@ -1,10 +1,12 @@
 import asyncio
 
+# noinspection PyPackageRequirements
 import discord
+# noinspection PyPackageRequirements
 from discord.ext import commands
 
 from utils import checks
-from utils.utility import yellow_tick, green_tick, red_tick
+from utils.constants import yellow_tick, green_tick, red_tick
 
 
 class Manager(commands.Cog):
@@ -23,8 +25,8 @@ class Manager(commands.Cog):
     async def list(self, ctx):
         guilds = sorted(self.bot.guilds, key=lambda g: len(g.members), reverse=True)
         s = f"**{len(guilds)} guilds:**"
-        for g in guilds:
-            s += f"\n[`{g.id}`]  {g.name}  [{len(g.members)}]"
+        for guild in guilds:
+            s += f"\n[`{guild.id}`]  {guild.name}  [{len(guild.members)}]"
         await ctx.send(s)
 
     @guild.command()
@@ -71,7 +73,7 @@ class Manager(commands.Cog):
             f"Members: {len(bot(False))} humans, {len(bot(True))} bots\n" \
             f"Channels: {len(guild.text_channels)} text, {len(guild.voice_channels)} voice, {len(guild.categories)} categories\n" \
             f"Roles: {len(guild.roles)}\n" \
-            f"Staff: {(a := len(with_permission('manage_guild')))} admins, {len(with_permission('ban_members'))-a} mods\n"
+            f"Staff: {(a := len(with_permission('manage_guild')))} admins, {len(with_permission('ban_members')) - a} mods\n"
 
         embed = self.bot.Embed(description=s)
         await ctx.send(embed=embed)

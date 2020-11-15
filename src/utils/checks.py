@@ -1,4 +1,6 @@
+# noinspection PyPackageRequirements
 import discord
+# noinspection PyPackageRequirements
 from discord.ext import commands
 
 
@@ -40,12 +42,14 @@ def bulbe_perms(permission):
         if await bulbe_perm_check(ctx, "admin"):
             return True
         return await bulbe_perm_check(ctx, permission)
+
     return commands.check(pred)
 
 
 def bot_admin():
     async def pred(ctx):
         return await bulbe_perm_check(ctx, "admin")
+
     return commands.check(pred)
 
 
@@ -81,7 +85,8 @@ async def config_perm_check(ctx, permission):
     try:
         roles_users = ctx.bot.config.get_config(ctx.guild.id)['roles'][permission]
     except AttributeError:
-        ctx.bot.logger.debug(f"AttributeError encountered in config_perm_check trying to access config for guild {ctx.guild.id if ctx.guild else None}.")
+        ctx.bot.logger.debug(
+            f"AttributeError encountered in config_perm_check trying to access config for guild {ctx.guild.id if ctx.guild else None}.")
         return False
     except KeyError:
         ctx.bot.logger.debug(f"KeyError encountered trying to access {permission} permission for guild {ctx.guild.id if ctx.guild else None}.")
@@ -115,6 +120,7 @@ def edit_config():
     - global config permissions
     - administrator in config
     """
+
     async def pred(ctx):
         if await guild_perm_check(ctx, {'administrator': True}):
             return True
@@ -123,6 +129,7 @@ def edit_config():
         if await config_perm_check(ctx, 'administrator'):
             return True
         return False
+
     return commands.check(pred)
 
 
@@ -133,6 +140,7 @@ def server_admin():
     - global moderator
     - administrator in config
     """
+
     async def pred(ctx):
         if await guild_perm_check(ctx, {'administrator': True}):
             return True
@@ -141,6 +149,7 @@ def server_admin():
         if await config_perm_check(ctx, 'administrator'):
             return True
         return False
+
     return commands.check(pred)
 
 
@@ -151,6 +160,7 @@ def server_mod():
     - global moderator
     - moderator in config
     """
+
     async def pred(ctx):
         if await guild_perm_check(ctx, {'manage_guild': True}):
             return True
@@ -159,6 +169,7 @@ def server_mod():
         if await config_perm_check(ctx, 'moderator'):
             return True
         return False
+
     return commands.check(pred)
 
 
@@ -167,6 +178,7 @@ def mod_or_permissions(**perms):
 
     async def predicate(ctx):
         return await check_guild_permissions(ctx, perms, check=any)
+
     return commands.check(predicate)
 
 
@@ -175,6 +187,7 @@ def admin_or_permissions(**perms):
 
     async def predicate(ctx):
         return await check_guild_permissions(ctx, perms, check=any)
+
     return commands.check(predicate)
 
 
@@ -196,6 +209,7 @@ async def check_guild_permissions(ctx, perms, *, check=all):
 def has_guild_permissions(*, check=all, **perms):
     async def pred(ctx):
         return await check_guild_permissions(ctx, perms, check=check)
+
     return commands.check(pred)
 
 
@@ -205,4 +219,5 @@ def is_in_guilds(*guild_ids):
         if guild is None:
             return False
         return guild.id in guild_ids
+
     return commands.check(predicate)

@@ -1,4 +1,4 @@
-import discord
+# noinspection PyPackageRequirements
 from discord.ext import commands
 
 """

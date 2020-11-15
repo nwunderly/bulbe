@@ -1,23 +1,25 @@
-import discord
-import random
+import json
 import logging
+import random
 
+# noinspection PyPackageRequirements
+import discord
+# noinspection PyPackageRequirements
 from discord.ext import tasks, commands
 
 from bulbe.base_bot import BestStarter
-# from utils.db import Table
-# from utils import checks, utility
-
+from bulbe.settings import Settings
+from utils import checks
 
 logger = logging.getLogger('bot.bulbe')
 
 
-def prefix(bot, message, only_guild_prefix=False):
-    default = bot.properties.prefix if bot.properties else bot.default_prefix
+def prefix(_bot, message, only_guild_prefix=False):
+    default = Settings.prefix
     if not message.guild:
-        return commands.when_mentioned(bot, message) + [default]
-    if bot.config:
-        config = bot.config.get_config(message.guild)
+        return commands.when_mentioned(_bot, message) + [default]
+    if _bot.config:
+        config = _bot.config.get_config(message.guild)
         p = config['prefix']
     else:
         p = None
@@ -25,7 +27,7 @@ def prefix(bot, message, only_guild_prefix=False):
     if only_guild_prefix:
         return p
     else:
-        return commands.when_mentioned(bot, message) + [p]
+        return commands.when_mentioned(_bot, message) + [p]
 
 
 class Bulbe(BestStarter):
@@ -34,12 +36,13 @@ class Bulbe(BestStarter):
                          description='Best Bot <3', **kwargs)
         self._nwunder = None
         self.config = None
+        self.properties = None
         self._user_blacklist = []
         self._guild_blacklist = []
         self.table = None
         self.help_command = commands.MinimalHelpCommand()
-        self.add_check(checks.global_checks)
         logger.info(f'Initialization complete.')
+        self.add_check(checks.global_checks)
 
     async def on_ready(self):
         logger.info('Logged in as {0.user}.'.format(self))
@@ -63,7 +66,7 @@ class Bulbe(BestStarter):
 
     async def on_command_completion(self, ctx):
         logger.info(f"Command '{ctx.command.qualified_name}' invoked / "
-                         f"author {ctx.author.id}, guild {ctx.guild.id if ctx.guild else None}, channel {ctx.channel.id}, message {ctx.message.id}")
+                    f"author {ctx.author.id}, guild {ctx.guild.id if ctx.guild else None}, channel {ctx.channel.id}, message {ctx.message.id}")
         # await self.update_stats(ctx)
 
     async def process_direct_messages(self, message):
@@ -71,8 +74,8 @@ class Bulbe(BestStarter):
             return
         attachments = f'             \n'.join([str(a.url) for a in message.attachments]) if message.attachments else None
         logger.info(f"Received direct message from {message.author} ({message.author.id}): \n"
-                         f"{message.content}\n"
-                         f"Attachments: {attachments}")
+                    f"{message.content}\n"
+                    f"Attachments: {attachments}")
         channel = self.properties.logging_channel
         if len(message.content) > 1500:
             content = message.clean_content[:1500] + f".... {len(message.clean_content)}"
@@ -114,56 +117,39 @@ class Bulbe(BestStarter):
                 return True
         return False
 
-    def read_blacklists(self):
-        try:
-            data = self.table.get([0, 'blacklists'])
-            # primary key 0 means general bot data
-            users, guilds = data['users'], data['guilds']
-            self._user_blacklist = [user[0] for user in users]
-            self._guild_blacklist = [guild[0] for guild in guilds]
-            return True
-        except Exception as e:
-            logger.error("Error in read_blacklists.", exc_info=True)
-            self._user_blacklist, self._guild_blacklist = [], []
-            return False
+    def load_blacklists(self):
+        with open('/data/user_blacklist.json') as fp:
+            data = json.load(fp)
+            self._user_blacklist = set(data)
+        with open('/data/guild_blacklist.json') as fp:
+            data = json.load(fp)
+            self._guild_blacklist = set(data)
 
-    def write_blacklists(self):
-        users = []
-        guilds = []
-        data = dict()
-        for user_id in self._user_blacklist:
-            users.append([user_id, str(self.get_user(user_id))])
-        for guild_id in self._guild_blacklist:
-            guilds.append([guild_id, str(self.get_guild(guild_id))])
-        data['users'], data['guilds'] = users, guilds
-        try:
-            self.table.put(data, [0, 'blacklists'])
-            return True
-        except Exception:
-            return False
+    def dump_blacklists(self):
+        with open('/data/user_blacklist.json') as fp:
+            data = list(self._user_blacklist)
+            json.dump(data, fp)
+        with open('/data/guild_blacklist.json') as fp:
+            data = list(self._guild_blacklist)
+            json.dump(data, fp)
 
     async def setup(self):
-        logger.info('Loading YAML data.')
-        p = await self.read_properties()
-        if not p:
-            logger.error('Error reading properties file. Shutting down.')
-            await self.close(-1)
-        logger.info("Setting up DynamoDB table.")
-        try:
-            self.table = Table(self._name.capitalize())
-        except:
-            logger.error("Error setting up table. Shutting down.")
-            await self.close(-1)
-        logger.info('Loading cogs.')
+        logger.info('Loading configurations.')
+        # TODO: any config data that needs to be loaded
+
+        logger.info('Connecting to database.')
+        # TODO: establish database connection
+
+        logger.info('Loading json data.')
+        self.load_blacklists()
+
+        logger.info("Loading cogs.")
         for cog in self.properties.cogs:
             try:
                 self.load_extension(cog)
                 logger.info(f"-> Loaded {cog}.")
-            except Exception as e:
-                logger.error(f"-> Failed to load extension {cog}.", exc_info=True)
-        b = self.read_blacklists()
-        if not b:
-            logger.error("Error reading blacklists. Continuing without blacklists")
+            except Exception:
+                logger.exception(f"-> Failed to load extension {cog}.")
 
     async def cleanup(self):
         logger.info("Closing cog aiohttp clients.")
@@ -173,4 +159,7 @@ class Bulbe(BestStarter):
             except AttributeError:
                 pass
         logger.info("Dumping data.")
-        self.write_blacklists()
+        self.dump_blacklists()
+
+
+bot = Bulbe()

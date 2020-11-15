@@ -1,5 +1,11 @@
 discord.py
 PyYaml
+psutil
+databases
+aiohttp
+
 fastapi
 starlette
 uvicorn
+itsdangerous
+boto3

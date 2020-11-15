@@ -1,15 +1,21 @@
+# noinspection PyPackageRequirements
 import discord
-from discord import Member, TextChannel, Role
-from discord.ext import commands, tasks
-
-from collections import defaultdict
-from typing import Union, Optional
 import traceback
 
+from typing import Union
+from collections import defaultdict
+# noinspection PyPackageRequirements
+from discord import Member, TextChannel, Role
+# noinspection PyPackageRequirements
+from discord.ext import commands
+
 from utils import checks
-from utils.db import Table
-from utils.utility import module_logger, green_tick, red_tick
+from utils.constants import green_tick, red_tick
 from utils.converters import Module, Command
+
+
+# TODO: MIGRATE DATABASE CODE
+
 
 DEFAULT_CONFIG = {
     # meta
@@ -63,9 +69,8 @@ DEFAULT_CONFIG = {
 class ConfigManager:
     def __init__(self, bot, cog):
         self.bot = bot
-        self.table = bot.table
+        self.cog = cog
         self._configs = defaultdict(self.empty)
-        self.logger = cog.logger
 
     @staticmethod
     def empty():
@@ -197,7 +202,6 @@ class ConfigManager:
 class Config(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.logger = module_logger(self.bot._name, 'config')
         if not self.bot.table:
             raise Exception("Connection to DynamoDB table not found.")
         self.bot.config = ConfigManager(bot, self)

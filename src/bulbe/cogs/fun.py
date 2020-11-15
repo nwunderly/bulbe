@@ -1,42 +1,34 @@
-import typing
-import datetime
-import aiohttp
-import asyncio
 import datetime
 
-import discord
+import aiohttp
+# noinspection PyPackageRequirements
 from discord.ext import commands
 
-from google.cloud import translate_v2 as translate
-from google.oauth2.service_account import Credentials
-
-from authentication.authentication import cloud_creds, nasa_api_key
-from utils.utility import HOME_DIR, fetch_previous_message, red_tick
-from utils.converters import Language
+from utils.auth import nasa_api_key
+from utils.constants import red_tick
 
 
 class Fun(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        credentials = Credentials.from_service_account_file(f"{HOME_DIR}/authentication/{cloud_creds}")
-        self.translator = translate.Client(credentials=credentials)
+        # self.translator = None
         self.lang_cache = dict()
         self.session = aiohttp.ClientSession()
 
-    @commands.command(name='translate', aliases=['t'])
-    async def _translate(self, ctx, lang: typing.Optional[Language] = 'en', *, text: commands.clean_content = None):
-        """Translates a message into a language of your choice.
-        Defaults to English. If no text to translate is specified, uses the current channel's previous message."""
-        if not lang:
-            lang = 'en'
-        if not text:
-            prev = await fetch_previous_message(ctx.message)
-            text = prev.content
-        client = self.translator
-        result = client.translate(text, target_language=lang)
-        if isinstance(result, dict):
-            text = result['translatedText'].replace('&#39;', '\'')
-            await ctx.send(f"(from {result['detectedSourceLanguage']}) {text}")
+    # @commands.command(name='translate', aliases=['t'])
+    # async def _translate(self, ctx, lang: typing.Optional[Language] = 'en', *, text: commands.clean_content = None):
+    #     """Translates a message into a language of your choice.
+    #     Defaults to English. If no text to translate is specified, uses the current channel's previous message."""
+    #     if not lang:
+    #         lang = 'en'
+    #     if not text:
+    #         prev = await fetch_previous_message(ctx.message)
+    #         text = prev.content
+    #     client = self.translator
+    #     result = client.translate(text, target_language=lang)
+    #     if isinstance(result, dict):
+    #         text = result['translatedText'].replace('&#39;', '\'')
+    #         await ctx.send(f"(from {result['detectedSourceLanguage']}) {text}")
 
     @commands.command()
     async def lmgtfy(self, ctx, *, search):
