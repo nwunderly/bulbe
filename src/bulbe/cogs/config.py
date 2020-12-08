@@ -1,12 +1,9 @@
-# noinspection PyPackageRequirements
 import discord
 import traceback
 
 from typing import Union
 from collections import defaultdict
-# noinspection PyPackageRequirements
 from discord import Member, TextChannel, Role
-# noinspection PyPackageRequirements
 from discord.ext import commands
 
 from utils import checks

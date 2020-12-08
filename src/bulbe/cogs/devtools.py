@@ -1,8 +1,6 @@
-# noinspection PyPackageRequirements
 import discord
 import aiohttp
 
-# noinspection PyPackageRequirements
 from discord.ext import commands
 from typing import Union
 

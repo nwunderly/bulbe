@@ -3,9 +3,7 @@ import psutil
 import datetime
 from typing import Union
 
-# noinspection PyPackageRequirements
 import discord
-# noinspection PyPackageRequirements
 from discord.ext import commands
 
 from utils.converters import FetchedUser

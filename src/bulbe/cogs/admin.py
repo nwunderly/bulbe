@@ -8,9 +8,7 @@ import typing
 import copy
 import logging
 
-# noinspection PyPackageRequirements
 import discord
-# noinspection PyPackageRequirements
 from discord.ext import commands
 
 from utils import checks

@@ -4,7 +4,6 @@ import logging
 import signal
 import traceback
 
-# noinspection PyPackageRequirements
 from discord.ext import commands
 
 logger = logging.getLogger('bot.best_starter')

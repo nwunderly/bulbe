@@ -1,4 +1,3 @@
-# noinspection PyPackageRequirements
 import discord
 
 

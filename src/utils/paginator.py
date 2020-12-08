@@ -1,7 +1,5 @@
 import asyncio
-# noinspection PyPackageRequirements
 import discord
-# noinspection PyPackageRequirements
 from discord.ext.commands import Paginator as CommandPaginator
 
 

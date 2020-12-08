@@ -2,9 +2,7 @@ import json
 import logging
 import random
 
-# noinspection PyPackageRequirements
 import discord
-# noinspection PyPackageRequirements
 from discord.ext import tasks, commands
 
 from bulbe.base_bot import BestStarter

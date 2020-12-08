@@ -1,7 +1,6 @@
 import datetime
 
 import aiohttp
-# noinspection PyPackageRequirements
 from discord.ext import commands
 
 from utils.auth import nasa_api_key
