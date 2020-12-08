@@ -3,6 +3,8 @@ import boto3
 
 from boto3.dynamodb.conditions import Key
 
+from databases import Database
+
 
 MIGRATION = 'DYNAMO_TO_JSON'
 # MIGRATION = 'JSON_TO_POSTGRES'

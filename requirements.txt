@@ -1,7 +1,7 @@
 discord.py
 PyYaml
 psutil
-databases
+databases[postgresql]
 aiohttp
 
 fastapi
