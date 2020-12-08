@@ -1,1 +1,1 @@
-docker restart bulbe_main bulbe_github
+docker restart bulbe_main #bulbe_github
