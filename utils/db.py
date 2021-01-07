@@ -1,8 +1,9 @@
-import databases
 import logging
-import sqlalchemy as sql
 
+import databases as db
+import sqlalchemy as sql
 from typing import List
+from datetime import datetime
 
 
 logger = logging.getLogger('utils.db')
@@ -15,7 +16,7 @@ logger = logging.getLogger('utils.db')
 
 class Database:
     def __init__(self, url):
-        self.conn = databases.Database(url, min_size=5, max_size=20)
+        self.conn = db.Database(url, min_size=5, max_size=20)
         self.config = None
         self.infractions = None
         self.last_infraction_id = None
@@ -84,6 +85,47 @@ guild_config = sql.Table(
     sql.Column('prefix', sql.TEXT),
 )
 
+infractions = sql.Table(
+    'infractions',
+    sql.MetaData(),
+    sql.Column('global_id', sql.BIGINT),
+    sql.Column('guild_id', sql.BIGINT, primary_key=True),
+    sql.Column('infraction_id', sql.BIGINT, primary_key=True),
+    sql.Column('timestamp', sql.TIMESTAMP, default=datetime.now),
+    sql.Column('user_id', sql.BIGINT),
+    sql.Column('mod_id', sql.BIGINT),
+    sql.Column('infraction_type', sql.TEXT),
+    sql.Column('reason', sql.TEXT),
+    sql.Column('message_id', sql.BIGINT),
+)
+
+last_infraction_id = sql.Table(
+    'last_infraction_id',
+    sql.MetaData(),
+    sql.Column('guild_id', sql.BIGINT, primary_key=True),
+    sql.Column('last_infraction_id', sql.BIGINT),
+)
+
+role_persist = sql.Table(
+    'role_persist',
+    sql.MetaData(),
+    sql.Column('guild_id', sql.BIGINT, primary_key=True),
+    sql.Column('role_id', sql.BIGINT, primary_key=True),
+    sql.Column('users', sql.ARRAY(sql.BIGINT)),
+)
+
+user_history = sql.Table(
+    'user_history',
+    sql.MetaData(),
+    sql.Column('guild_id', sql.BIGINT, primary_key=True),
+    sql.Column('user_id', sql.BIGINT, primary_key=True),
+    sql.Column('mute', sql.ARRAY(sql.BIGINT)),
+    sql.Column('kick', sql.ARRAY(sql.BIGINT)),
+    sql.Column('ban', sql.ARRAY(sql.BIGINT)),
+    sql.Column('unmute', sql.ARRAY(sql.BIGINT)),
+    sql.Column('unban', sql.ARRAY(sql.BIGINT)),
+)
+
 
 ############
 # TABLES #
@@ -91,10 +133,10 @@ guild_config = sql.Table(
 
 
 class Table:
-    def __init__(self, name, db: Database):
+    def __init__(self, name, _db: Database):
         self.name = name
-        self.db = db
-        self.conn = db.conn
+        self.db = _db
+        self.conn = _db.conn
         self.cache = {}
 
     @staticmethod
@@ -137,8 +179,8 @@ class ConfigTable(Table):
         'modlog_channel': List[int],
     }
 
-    def __init__(self, db):
-        super().__init__('config', db)
+    def __init__(self, _db):
+        super().__init__('config', _db)
 
     async def exists(self, guild_id):
         query = r"SELECT exists(SELECT 1 FROM config WHERE guild_id = $1)"
