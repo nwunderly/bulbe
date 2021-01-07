@@ -8,9 +8,7 @@ COPY requirements.txt requirements.txt
 
 RUN pip3 install -r requirements.txt
 
-COPY src /bulbe
+COPY . /bulbe
 COPY config /config
-COPY auth /auth
-
 
 ENTRYPOINT ["python3", "launcher.py"]
