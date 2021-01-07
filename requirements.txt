@@ -2,8 +2,8 @@ discord.py
 PyYaml
 psutil
 databases[postgresql]
+SQLAlchemy
 aiohttp
-
 fastapi
 starlette
 uvicorn
