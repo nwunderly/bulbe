@@ -5,24 +5,28 @@ import uvicorn
 
 from bulbe.bot import bot  # bulbe
 from github.app import app  # fastapi app for github integration
-from utils import auth
 from utils.helpers import setup_logger
+from auth import TOKEN_DEV, TOKEN_PROD
+
 
 logger = logging.getLogger('bot.launcher')
 
 
+log_levels = {
+    'debug': logging.DEBUG,
+    'info': logging.INFO,
+    'error': logging.ERROR,
+}
+
+
 def start_discord(args):
-    prod = args.prod
+    dev = args.dev
     log = args.log
 
     if not log:
-        log = 'info' if prod else 'debug'
+        log = 'debug' if dev else 'info'
 
-    level = {
-        'debug': logging.DEBUG,
-        'info': logging.INFO,
-        'error': logging.ERROR,
-    }[log]
+    level = log_levels[log]
 
     setup_logger("bot", level)
     setup_logger("cogs", level)
@@ -31,7 +35,8 @@ def start_discord(args):
 
     logger.info("Calling run method.")
     try:
-        bot.run(auth[''])
+        token = TOKEN_DEV if dev else TOKEN_PROD
+        bot.run(token)
     finally:
         try:
             exit_code = bot._exit_code
@@ -49,16 +54,10 @@ def start_github(args):
     if not log:
         log = 'info' if prod else 'debug'
 
-    level = {
-        'debug': logging.DEBUG,
-        'info': logging.INFO,
-        'error': logging.ERROR,
-    }[log]
+    level = log_levels[log]
 
-    setup_logger("bot", level)
-    setup_logger("cogs", level)
+    setup_logger("github", level)
     setup_logger("utils", level)
-    setup_logger('discord', logging.INFO)
 
     uvicorn.run(app, host='0.0.0.0', port=9000)
 
@@ -70,12 +69,12 @@ def main():
 
     discord = subcommands.add_parser('discord')
     discord.add_argument('--log')
-    discord.add_argument('--prod', action='store_true')
+    discord.add_argument('--dev', action='store_true')
     discord.set_defaults(execute=start_discord)
 
     github = subcommands.add_parser('github')
     github.add_argument('--log')
-    github.add_argument('--prod', action='store_true')
+    github.add_argument('--dev', action='store_true')
     github.set_defaults(execute=start_github)
 
     args = parser.parse_args()
