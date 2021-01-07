@@ -129,4 +129,4 @@ dmypy.json
 auth/
 data/
 logs/
-data/auth.py
+auth.py
