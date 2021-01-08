@@ -1,5 +1,6 @@
 import discord
 import traceback
+import logging
 
 from typing import Union
 from collections import defaultdict
@@ -9,9 +10,11 @@ from discord.ext import commands
 from utils import checks
 from utils.constants import green_tick, red_tick
 from utils.converters import Module, Command
+from bulbe.base import Cog
 
+# TODO: HUGE REWORK HERE
 
-# TODO: MIGRATE DATABASE CODE
+logger = logging.getLogger('cogs.config')
 
 
 DEFAULT_CONFIG = {
@@ -196,7 +199,7 @@ class ConfigManager:
         return False
 
 
-class Config(commands.Cog):
+class Config(Cog):
     def __init__(self, bot):
         self.bot = bot
         if not self.bot.table:
@@ -210,11 +213,11 @@ class Config(commands.Cog):
     def cog_unload(self):
         c = self.config.write()
         if not c:
-            self.logger.error("Error writing config to database.")
+            logger.error("Error writing config to database.")
 
     @commands.Cog.listener()
     async def on_ready(self):
-        # self.logger.info("Generating empty configs for non-configured guilds")
+        # logger.info("Generating empty configs for non-configured guilds")
         # for guild in self.bot.guilds:
         #     self.config.check_config(guild)
         self.config.update_names()

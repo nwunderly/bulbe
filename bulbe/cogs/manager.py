@@ -5,9 +5,10 @@ from discord.ext import commands
 
 from utils import checks
 from utils.constants import yellow_tick, green_tick, red_tick
+from bulbe.base import Cog
 
 
-class Manager(commands.Cog):
+class Manager(Cog):
     def __init__(self, bot):
         self.bot = bot
         self._invites = dict()

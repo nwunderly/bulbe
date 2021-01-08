@@ -14,12 +14,12 @@ from discord.ext import commands
 from utils import checks
 from utils import paginator
 from utils import converters
-
+from bulbe.base import Cog
 
 logger = logging.getLogger('cogs.admin')
 
 
-class Admin(commands.Cog):
+class Admin(Cog):
     def __init__(self, bot):
         self.bot = bot
         self._last_result = None

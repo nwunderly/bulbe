@@ -1,12 +1,8 @@
 from discord.ext import commands
-
-"""
-FIX LOGGING ASAP
-2.2.0 -> implement stats tracking (guild invite tracking and command stats)
-"""
+from bulbe.base import Cog
 
 
-class Stats(commands.Cog):
+class Stats(Cog):
     def __init__(self, bot):
         self.bot = bot
 

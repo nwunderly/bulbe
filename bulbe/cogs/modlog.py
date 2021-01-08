@@ -8,6 +8,7 @@ from discord.ext import commands
 from utils import checks
 from utils import db
 from utils.converters import FetchedUser
+from bulbe.base import Cog
 
 logger = logging.getLogger('cogs.modlog')
 
@@ -19,7 +20,7 @@ EMOJI_UNMUTE = "<:patpog:718369341816700958>"
 EMOJI_UNBAN = "<:thankful:589318185183084554>"
 
 
-class Modlog(commands.Cog):
+class Modlog(Cog):
     """Mod action log, utilizes audit logs."""
 
     def __init__(self, bot):

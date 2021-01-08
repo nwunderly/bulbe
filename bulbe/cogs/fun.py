@@ -3,11 +3,12 @@ import datetime
 import aiohttp
 from discord.ext import commands
 
-from utils.auth import nasa_api_key
+from auth import NASA_API_KEY
 from utils.constants import red_tick
+from bulbe.base import Cog
 
 
-class Fun(commands.Cog):
+class Fun(Cog):
     def __init__(self, bot):
         self.bot = bot
         # self.translator = None
@@ -64,7 +65,7 @@ class Fun(commands.Cog):
                 return
         api_formatted_date = f"{date.year}-{date.month}-{date.day}"
         site_formatted_date = f"{str(date.year)[2:]}{date.month:02d}{date.day:02d}"
-        api_url = f"https://api.nasa.gov/planetary/apod?date={api_formatted_date}&api_key={nasa_api_key}"
+        api_url = f"https://api.nasa.gov/planetary/apod?date={api_formatted_date}&api_key={NASA_API_KEY}"
         site_url = f"https://apod.nasa.gov/apod/ap{site_formatted_date}.html"
         response = await self.session.get(api_url)
         data = await response.json()

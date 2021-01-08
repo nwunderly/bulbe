@@ -6,9 +6,10 @@ from typing import Union
 
 from utils.converters import FetchedUser
 from utils.constants import red_tick
+from bulbe.base import Cog
 
 
-class DevTools(commands.Cog):
+class DevTools(Cog):
     def __init__(self, bot):
         self.bot = bot
         self.session = aiohttp.ClientSession()

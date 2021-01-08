@@ -8,6 +8,7 @@ from discord.ext import commands
 
 from utils.converters import FetchedUser
 from utils.constants import status
+from bulbe.base import Cog
 
 
 class PersistManager:
@@ -36,7 +37,7 @@ class PersistManager:
         self.table.put(data, [member.guild.id, 'rolePersist'])
 
 
-class Utilities(commands.Cog):
+class Utilities(Cog):
     def __init__(self, bot):
         self.bot = bot
         self.persist = PersistManager(self)
