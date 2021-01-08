@@ -10,3 +10,5 @@ starlette
 uvicorn
 itsdangerous
 boto3
+google-cloud-translate
+aionasa
