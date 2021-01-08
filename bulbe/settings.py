@@ -12,12 +12,12 @@ class Settings:
 
     cogs = [
         'jishaku',
-        'bulbe.cogs.admin',
-        'bulbe.cogs.config',
-        'bulbe.cogs.devtools',
-        'bulbe.cogs.fun',
-        'bulbe.cogs.manager',
-        'bulbe.cogs.utilities',
+        # 'bulbe.cogs.admin',
+        # 'bulbe.cogs.config',
+        # 'bulbe.cogs.devtools',
+        # 'bulbe.cogs.fun',
+        # 'bulbe.cogs.manager',
+        # 'bulbe.cogs.utilities',
     ]
 
     bot_perms = {
@@ -34,7 +34,7 @@ class Settings:
     }
 
     activities = [
-        f'playing version {version}!',
+        'playing version '+version+"!",
         'playing #001 in the dex, #001 in the heart.',
         'playing with other bulbasaurs',
         'listening to bulbasaur sounds',
