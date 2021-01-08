@@ -43,7 +43,7 @@ class Language(commands.Converter):
         argument = argument.lower()
 
         def update_langs():
-            langs = ctx.cog.translator.get_languages(target_language='en')
+            langs = await ctx.cog.translate_client.get_supported_languages()
             for lang in langs:
                 ctx.cog.lang_cache[lang['name'].lower()] = lang['language']
 

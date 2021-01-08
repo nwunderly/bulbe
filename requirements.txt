@@ -11,4 +11,5 @@ uvicorn
 itsdangerous
 boto3
 google-cloud-translate
+google-auth
 aionasa

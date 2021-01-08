@@ -130,3 +130,4 @@ auth/
 data/
 logs/
 auth.py
+cloud_auth.json

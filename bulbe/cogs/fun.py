@@ -1,34 +1,60 @@
 import datetime
-
+import typing
 import aiohttp
-from discord.ext import commands
+import aionasa
 
-from auth import NASA_API_KEY
+from discord.ext import commands
+from google.oauth2.service_account import Credentials
+from google.cloud.translate_v3.services.translation_service import TranslationServiceAsyncClient
+from google.cloud.translate_v3.types.translation_service import TranslateTextRequest
+
 from utils.constants import red_tick
+from utils.helpers import fetch_previous_message
+from utils.converters import Language
 from bulbe.base import Cog
+from auth import CLOUD_CREDS_FILE, CLOUD_PROJ_ID, NASA_API_KEY
+
 
 
 class Fun(Cog):
     def __init__(self, bot):
         self.bot = bot
-        # self.translator = None
-        self.lang_cache = dict()
         self.session = aiohttp.ClientSession()
 
-    # @commands.command(name='translate', aliases=['t'])
-    # async def _translate(self, ctx, lang: typing.Optional[Language] = 'en', *, text: commands.clean_content = None):
-    #     """Translates a message into a language of your choice.
-    #     Defaults to English. If no text to translate is specified, uses the current channel's previous message."""
-    #     if not lang:
-    #         lang = 'en'
-    #     if not text:
-    #         prev = await fetch_previous_message(ctx.message)
-    #         text = prev.content
-    #     client = self.translator
-    #     result = client.translate(text, target_language=lang)
-    #     if isinstance(result, dict):
-    #         text = result['translatedText'].replace('&#39;', '\'')
-    #         await ctx.send(f"(from {result['detectedSourceLanguage']}) {text}")
+        credentials = Credentials.from_service_account_file(CLOUD_CREDS_FILE)
+        self.translate_client = TranslationServiceAsyncClient(credentials=credentials)
+        self.lang_cache = {}
+
+        self.apod = aionasa.APOD(NASA_API_KEY, session=self.session)
+        self.insight = aionasa.InSight(NASA_API_KEY, session=self.session)
+        self.epic = aionasa.EPIC(NASA_API_KEY, session=self.session)
+        self.neows = aionasa.NeoWs(NASA_API_KEY, session=self.session)
+        self.exoplanet = aionasa.Exoplanet(NASA_API_KEY, session=self.session)
+
+    async def cleanup(self):
+        await self.session.close()
+
+    @commands.command(name='translate', aliases=['t'])
+    async def _translate(self, ctx, lang: typing.Optional[Language] = 'en', *, text: commands.clean_content = None):
+        """Translates a message into a language of your choice.
+        Defaults to English. If no text to translate is specified, uses the current channel's previous message."""
+        if not lang:
+            lang = 'en'
+        if not text:
+            prev = await fetch_previous_message(ctx.message)
+            text = prev.content
+        result = self.translate_client.translate_text(
+            request={
+                "parent": f"projects/{CLOUD_PROJ_ID}/locations/global",
+                "contents": [text],
+                "mime_type": "text/plain",  # mime types: text/plain, text/html
+                "source_language_code": "en-US",
+                "target_language_code": "fr",
+            }
+        )
+        if isinstance(result, dict):
+            text = result['translatedText'].replace('&#39;', '\'')
+            await ctx.send(f"(from {result['detectedSourceLanguage']}) {text}")
 
     @commands.command()
     async def lmgtfy(self, ctx, *, search):
