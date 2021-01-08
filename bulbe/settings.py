@@ -11,6 +11,7 @@ class Settings:
     invite_permissions = 2110258423
 
     cogs = [
+        'jishaku',
         'bulbe.cogs.admin',
         'bulbe.cogs.config',
         'bulbe.cogs.devtools',
@@ -33,7 +34,7 @@ class Settings:
     }
 
     activities = [
-        'playing version 3.0.0!',
+        f'playing version {version}!',
         'playing #001 in the dex, #001 in the heart.',
         'playing with other bulbasaurs',
         'listening to bulbasaur sounds',

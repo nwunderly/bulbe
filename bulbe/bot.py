@@ -1,13 +1,14 @@
 import json
 import logging
 import random
-
 import discord
+
 from discord.ext import tasks, commands
 
-from bulbe.base_bot import BestStarter
+from bulbe.base import BestStarter
 from bulbe.settings import Settings
-from utils import checks
+from utils.checks import global_checks
+from utils.db import Database
 
 logger = logging.getLogger('bot.bulbe')
 
@@ -29,29 +30,27 @@ def prefix(_bot, message, only_guild_prefix=False):
 
 
 class Bulbe(BestStarter):
-    def __init__(self, **kwargs):
+    def __init__(self, token, db_url, **kwargs):
         super().__init__(command_prefix=prefix, case_insensitive=True,
                          description='Best Bot <3', **kwargs)
+        self.__token = token
+        self.__db_url = db_url
         self._nwunder = None
-        self.config = None
-        self.properties = None
+        self._running = False
         self._user_blacklist = []
         self._guild_blacklist = []
-        self.table = None
+        self.db = Database(db_url)
         self.help_command = commands.MinimalHelpCommand()
+        self.add_check(global_checks)
         logger.info(f'Initialization complete.')
-        self.add_check(checks.global_checks)
 
     async def on_ready(self):
         logger.info('Logged in as {0.user}.'.format(self))
         self._nwunder = await self.fetch_user(204414611578028034)
-        if self.properties:
-            logger.info("Converting properties.")
-            await self.properties.convert(self)
-        else:
-            logger.error("on_ready called but Properties object has not been defined.")
-        self.update_presence.start()
-        logger.info(f"Bot is ready, version {self.properties.version}!")
+        if not self._running:
+            self.update_presence.start()
+        self._running = True
+        logger.info(f"Bot is ready, version {Settings.version}!")
 
     async def on_message(self, message):
         if message.author.bot:
@@ -63,8 +62,8 @@ class Bulbe(BestStarter):
             await self.process_direct_messages(message)
 
     async def on_command_completion(self, ctx):
-        logger.info(f"Command '{ctx.command.qualified_name}' invoked / "
-                    f"author {ctx.author.id}, guild {ctx.guild.id if ctx.guild else None}, channel {ctx.channel.id}, message {ctx.message.id}")
+        logger.debug(f"Command '{ctx.command.qualified_name}' invoked / "
+                     f"author {ctx.author.id}, guild {ctx.guild.id if ctx.guild else None}, channel {ctx.channel.id}, message {ctx.message.id}")
         # await self.update_stats(ctx)
 
     async def process_direct_messages(self, message):
@@ -74,7 +73,7 @@ class Bulbe(BestStarter):
         logger.info(f"Received direct message from {message.author} ({message.author.id}): \n"
                     f"{message.content}\n"
                     f"Attachments: {attachments}")
-        channel = self.properties.logging_channel
+        channel = Settings.logging_channel
         if len(message.content) > 1500:
             content = message.clean_content[:1500] + f".... {len(message.clean_content)}"
         else:
@@ -89,15 +88,15 @@ class Bulbe(BestStarter):
 
     def get_embed(self, message=None):
         p = self.command_prefix(self, message, only_guild_prefix=True)
-        e = discord.Embed(title=f"Bulbe v{self.properties.version}",
-                          color=self.properties.embed_color,
+        e = discord.Embed(title=f"Bulbe v{Settings.version}",
+                          color=Settings.embed_color,
                           description=f"Prefix: `{p}`")
         return e
 
     @tasks.loop(minutes=20)
     async def update_presence(self):
         activity = None
-        name = random.choice(self.properties.activities)
+        name = random.choice(Settings.activities)
         if name.lower().startswith("playing "):
             activity = discord.Game(name.replace("playing ", ""))
         elif name.lower().startswith("watching "):
@@ -131,23 +130,14 @@ class Bulbe(BestStarter):
             data = list(self._guild_blacklist)
             json.dump(data, fp)
 
+    def run(self):
+        super().run(self.__token)
+
     async def setup(self):
-        logger.info('Loading configurations.')
-        # TODO: any config data that needs to be loaded
-
         logger.info('Connecting to database.')
-        # TODO: establish database connection
-
-        logger.info('Loading json data.')
-        self.load_blacklists()
-
-        logger.info("Loading cogs.")
-        for cog in self.properties.cogs:
-            try:
-                self.load_extension(cog)
-                logger.info(f"-> Loaded {cog}.")
-            except Exception:
-                logger.exception(f"-> Failed to load extension {cog}.")
+        await self.db.connect()
+        # self.load_blacklists()
+        await self.load_cogs(Settings.cogs)
 
     async def cleanup(self):
         logger.info("Closing cog aiohttp clients.")
@@ -158,6 +148,3 @@ class Bulbe(BestStarter):
                 pass
         logger.info("Dumping data.")
         self.dump_blacklists()
-
-
-bot = Bulbe()

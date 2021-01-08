@@ -15,8 +15,8 @@ logger = logging.getLogger('utils.db')
 
 
 class Database:
-    def __init__(self, url):
-        self.conn = db.Database(url, min_size=5, max_size=20)
+    def __init__(self, database_url):
+        self.conn = db.Database(database_url, min_size=5, max_size=20)
         self.config = None
         self.infractions = None
         self.last_infraction_id = None

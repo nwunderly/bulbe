@@ -6,7 +6,7 @@ import traceback
 
 from discord.ext import commands
 
-logger = logging.getLogger('bot.best_starter')
+logger = logging.getLogger('bot.base')
 
 
 class BestStarter(commands.AutoShardedBot):
@@ -70,3 +70,30 @@ class BestStarter(commands.AutoShardedBot):
         logger.debug("Closing connection to discord.")
         await super().close()
 
+    async def load_cog(self, cog_name):
+        # TODO
+        pass
+
+    async def load_cogs(self, cog_names):
+        logger.info("Loading cogs.")
+        for cog in cog_names:
+            try:
+                self.load_extension(cog)
+                # await self.load_cog(cog)
+                logger.info(f"-> Loaded {cog}.")
+            except Exception:
+                logger.exception(f"-> Failed to load extension {cog}.")
+
+    async def unload_cogs(self):
+        # TODO
+        pass
+
+
+class Cog(commands.Cog):
+    """Cog class with async setup/cleanup methods."""
+
+    async def setup(self):
+        pass
+
+    async def cleanup(self):
+        pass
