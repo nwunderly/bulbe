@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from aionasa.utils import date_strptime
 
 
 class FetchedUser(commands.Converter):
@@ -41,24 +42,9 @@ class OptionFlag(commands.Converter):
 class Language(commands.Converter):
     async def convert(self, ctx, argument):
         argument = argument.lower()
+        client = ctx.cog.translate_api
 
-        def update_langs():
-            langs = await ctx.cog.translate_client.get_supported_languages()
-            for lang in langs:
-                ctx.cog.lang_cache[lang['name'].lower()] = lang['language']
-
-        def get_lang():
-            if argument in ctx.cog.lang_cache.keys():
-                return ctx.cog.lang_cache[argument]
-            elif argument in ctx.cog.lang_cache.values():
-                return argument
-
-        result = get_lang()
-        if result:
-            return result
-
-        update_langs()
-        result = get_lang()
+        result = await client.convert_lang(argument)
         if result:
             return result
 

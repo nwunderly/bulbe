@@ -15,18 +15,19 @@ logger = logging.getLogger('bot.bulbe')
 
 def prefix(_bot, message, only_guild_prefix=False):
     default = Settings.prefix
-    if not message.guild:
-        return commands.when_mentioned(_bot, message) + [default]
-    if _bot.config:
-        config = _bot.config.get_config(message.guild)
-        p = config['prefix']
-    else:
-        p = None
-    p = p if p else default
-    if only_guild_prefix:
-        return p
-    else:
-        return commands.when_mentioned(_bot, message) + [p]
+    return default
+    # if not message.guild:
+    #     return commands.when_mentioned(_bot, message) + [default]
+    # if _bot.config:
+    #     config = _bot.config.get_config(message.guild)
+    #     p = config['prefix']
+    # else:
+    #     p = None
+    # p = p if p else default
+    # if only_guild_prefix:
+    #     return p
+    # else:
+    #     return commands.when_mentioned(_bot, message) + [p]
 
 
 class Bulbe(BestStarter):
@@ -140,11 +141,6 @@ class Bulbe(BestStarter):
         await self.load_cogs(Settings.cogs)
 
     async def cleanup(self):
-        logger.info("Closing cog aiohttp clients.")
-        for name, cog in self.cogs.items():
-            try:
-                await cog.session.close()
-            except AttributeError:
-                pass
-        logger.info("Dumping data.")
-        self.dump_blacklists()
+        pass
+        # logger.info("Dumping data.")
+        # self.dump_blacklists()

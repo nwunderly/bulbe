@@ -16,16 +16,12 @@ def list_by_category(guild):
     return channels
 
 
-def setup_logger(name, debug):
+def setup_logger(name, level):
     _logger = logging.getLogger(name)
     d = datetime.datetime.now()
     time = f"{d.month}-{d.day}_{d.hour}h{d.minute}m"
 
-    filename = '/logs/{}.log'
-    if debug:
-        level = logging.DEBUG
-    else:
-        level = logging.INFO
+    filename = './logs/{}.log'
 
     file_handler = logging.FileHandler(filename.format(time))
     # file_handler.setLevel(level)

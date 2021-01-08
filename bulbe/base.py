@@ -66,8 +66,15 @@ class BestStarter(commands.AutoShardedBot):
 
     async def close(self, exit_code=0):
         self._exit_code = exit_code
+        logger.info("Running bot cleanup.")
         await self.cleanup()
-        logger.debug("Closing connection to discord.")
+        logger.info("Running cog cleanup.")
+        for name, cog in self.cogs.items():
+            try:
+                await cog.cleanup()
+            except AttributeError:
+                pass
+        logger.info("Closing connection to discord.")
         await super().close()
 
     async def load_cog(self, cog_name):

@@ -33,14 +33,14 @@ def start_discord(args):
     setup_logger("utils", level)
     setup_logger('discord', logging.INFO)
 
-    logger.info("Starting up.")
-
     token = TOKEN_DEV if dev else TOKEN_PROD
     db_url = DB_URL_DEV if dev else DB_URL_PROD
     bot = Bulbe(token, db_url)
 
+    logger.info("Starting up.")
+
     try:
-        bot.run(token, db_url)
+        bot.run()
     finally:
         try:
             exit_code = bot._exit_code

@@ -4,8 +4,7 @@ docker build . --tag bulbe:latest
 docker run -d \
  --name bulbe_main \
  --network prod \
- -v $PWD/logs/bulbe:/logs \
- -v $PWD/data:/data \
+ -v $PWD/logs/bulbe:/bulbe/logs \
  --restart unless-stopped \
  bulbe discord --prod
 
