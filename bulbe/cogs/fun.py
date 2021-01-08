@@ -45,7 +45,7 @@ class Fun(Cog):
         await ctx.send(f"<https://lmgtfy.com/?q={q}>")
 
     @commands.command()
-    async def apod(self, ctx, *, date=None):
+    async def apod(self, ctx, *, date='today'):
         """Astronomy picture of the day. Date format should be mm-dd-yyyy, mm/dd/yyyy."""
         try:
             date = date_strptime(date)
