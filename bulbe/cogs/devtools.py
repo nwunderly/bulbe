@@ -1,5 +1,7 @@
 import discord
 import aiohttp
+import inspect
+import os
 
 from discord.ext import commands
 from typing import Union
@@ -103,32 +105,32 @@ class DevTools(Cog):
     async def user(self, ctx, *, target):
         pass
 
-    # @commands.command(name='source', aliases=['src'])
-    # async def get_source(self, ctx, name=None):
-    #     if not name:
-    #         await ctx.send("<https://github.com/nwunderly/RevBots>")
-    #         return
-    #     if name == 'help':
-    #         await ctx.send(f"<https://github.com/Rapptz/discord.py/blob/master/discord/ext/commands/help.py>")
-    #         return
-    #     command = self.bot.get_command(name)
-    #     cog = self.bot.get_cog(name)
-    #     if command:
-    #         obj = command.callback
-    #     elif cog:
-    #         obj = cog.__class__
-    #     else:
-    #         await ctx.send("I couldn't find a command or module with that name.")
-    #         return
-    #     path = inspect.getsourcefile(obj).replace('\\', '/')
-    #     git_path = path[len(HOME_DIR)+1:]
-    #     git_link = f"https://github.com/nwunderly/RevBots/tree/master/{git_path}"
-    #     print(git_link)
-    #     async with self.session.get(git_link) as response:
-    #         if response.status == 404:
-    #             await ctx.send("Command or module is not yet on github.")
-    #             return
-    #     await ctx.send(f"<{git_link}>")
+    @commands.command(name='source', aliases=['src'])
+    async def get_source(self, ctx, name=None):
+        if not name:
+            await ctx.send("<https://github.com/nwunderly/bulbe>")
+            return
+        if name == 'help':
+            await ctx.send(f"<https://github.com/Rapptz/discord.py/blob/master/discord/ext/commands/help.py>")
+            return
+        command = self.bot.get_command(name)
+        cog = self.bot.get_cog(name)
+        if command:
+            obj = command.callback
+        elif cog:
+            obj = cog.__class__
+        else:
+            await ctx.send("I couldn't find a command or module with that name.")
+            return
+        path = inspect.getsourcefile(obj).replace('\\', '/')
+        git_path = path.replace(os.getcwd().replace('\\', '/'), '')
+        git_link = f"https://github.com/nwunderly/bulbe/tree/master/{git_path}"
+        print(git_link)
+        async with self.session.get(git_link) as response:
+            if response.status == 404:
+                await ctx.send("Command or module is not yet on github.")
+                return
+        await ctx.send(f"<{git_link}>")
 
 
 def setup(bot):

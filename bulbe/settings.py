@@ -1,10 +1,9 @@
 import discord
-import aionasa
 
 
 class Settings:
     version = '3.0.0'
-    prefix = "++"
+    prefix = "="
 
     embed_color = discord.Color(int('2ecc71', 16))
 
@@ -15,7 +14,7 @@ class Settings:
         'jishaku',
         # 'bulbe.cogs.admin',
         # 'bulbe.cogs.config',
-        # 'bulbe.cogs.devtools',
+        'bulbe.cogs.devtools',
         'bulbe.cogs.fun',
         # 'bulbe.cogs.manager',
         # 'bulbe.cogs.utilities',

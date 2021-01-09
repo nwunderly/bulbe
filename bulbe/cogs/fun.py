@@ -57,8 +57,7 @@ class Fun(Cog):
         explanation = picture.explanation
         site_url = picture.html_url
         img_url = picture.hdurl
-        embed = discord.Embed(title=title, description=explanation, url=site_url, color=Settings.embed_color)
-        embed.set_image(url=img_url)
+        embed = discord.Embed(title=title, description=explanation, url=site_url, color=Settings.embed_color).set_image(url=img_url)
         await ctx.send(embed=embed)
 
 
