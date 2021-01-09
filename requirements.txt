@@ -6,7 +6,7 @@ databases[postgresql]
 SQLAlchemy
 aiohttp
 fastapi
-starlette
+starlette==0.13.6
 uvicorn
 itsdangerous
 pydantic
