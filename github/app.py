@@ -31,7 +31,7 @@ async def post_api(request: Request):
     print(f"{signature=}")
     body = await request.body()
     if validate_signature(signature, bytes(body)):
-        data = json.loads(body.decode('utf-8'))
+        data = json.loads(body.decode())
         print(data)
         # event = WebhookEvent(data, request)
         # await bot.on_event(event)
@@ -39,7 +39,8 @@ async def post_api(request: Request):
 
 def validate_signature(signature, body):
     h = hmac.new(signature, body, hashlib.sha256)
-    if hmac.compare_digest(h.digest(), GITHUB_WEBHOOK_SECRET):
+    secret = ('sha256'+GITHUB_WEBHOOK_SECRET).encode()
+    if hmac.compare_digest(h.digest(), secret):
         print("VALID SIGNATURE")
         return True
     else:
