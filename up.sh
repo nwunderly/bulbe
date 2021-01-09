@@ -11,7 +11,7 @@ docker run -d \
 docker run -d \
  --name bulbe_github \
  --network prod \
- -v $PWD/logs/github:/logs \
+ -v $PWD/logs/github:/bulbe/logs \
  -v $PWD/data:/data \
  --restart unless-stopped \
  bulbe github --dev --log debug
