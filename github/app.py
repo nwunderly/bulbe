@@ -38,15 +38,15 @@ async def post_api(request: Request):
 
 
 def validate_signature(signature, body):
-    h = hmac.new(GITHUB_WEBHOOK_SECRET, body, hashlib.sha256)
-    to_compare = ('sha256'+signature).encode()
-    if hmac.compare_digest(h, to_compare):
+    real_signature = hmac.new(signature, body, hashlib.sha256).digest()
+    print(f"{real_signature=}")
+    print(f"{real_signature.decode()=}")
+    if hmac.compare_digest(real_signature, signature):
         print("VALID SIGNATURE")
         return True
     else:
         print("INVALID SIGNATURE")
         print(h)
         print(h.digest())
-        print(h.hexdigest())
         return False
 
