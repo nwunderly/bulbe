@@ -52,11 +52,11 @@ def start_discord(args):
 
 
 def start_github(args):
-    prod = args.prod
+    dev = args.dev
     log = args.log
 
     if not log:
-        log = 'info' if prod else 'debug'
+        log = 'debug' if dev else 'info'
 
     level = log_levels[log]
 
