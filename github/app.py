@@ -26,6 +26,9 @@ async def cleanup():
 @app.post('/api')
 async def post_api(request: Request):
     signature = request.headers['X-Hub-Signature-256']
+    print(f"{signature=}")
+    signature = signature.encode()
+    print(f"{signature=}")
     body = await request.body()
     if validate_signature(signature, bytes(body)):
         data = json.loads(body.decode('utf-8'))
