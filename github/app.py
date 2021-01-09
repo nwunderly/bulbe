@@ -38,9 +38,7 @@ async def post_api(request: Request):
 
 
 def validate_signature(signature, body):
-    real_signature = hmac.new(signature, body, hashlib.sha256).digest()
-    print(f"{real_signature=}")
-    print(f"{real_signature.decode()=}")
+    real_signature = "sha256=" + hmac.new(signature, body, hashlib.sha256).hexdigest()
     if hmac.compare_digest(real_signature, signature):
         print("VALID SIGNATURE")
         return True
