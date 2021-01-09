@@ -9,6 +9,7 @@ fastapi
 starlette
 uvicorn
 itsdangerous
+pydantic
 boto3
 google-cloud-translate
 google-auth
