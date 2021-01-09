@@ -40,7 +40,7 @@ async def post_api(request: Request):
 def validate_signature(signature, body):
     h = hmac.new(GITHUB_WEBHOOK_SECRET, body, hashlib.sha256)
     to_compare = ('sha256'+signature).encode()
-    if hmac.compare_digest(h.digest(), to_compare):
+    if hmac.compare_digest(h, to_compare):
         print("VALID SIGNATURE")
         return True
     else:
