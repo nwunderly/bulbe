@@ -5,7 +5,8 @@ import json
 from fastapi import FastAPI
 from starlette.requests import Request
 
-from github.bot import GithubBot
+from gh.bot import GithubBot
+from gh.event import WebhookEvent
 from auth import GITHUB_WEBHOOK_SECRET
 
 
@@ -29,8 +30,8 @@ async def post_api(request: Request):
     body = await request.body()
     if validate_signature(signature, bytes(body)):
         data = json.loads(body.decode())
-        # event = WebhookEvent(data, request)
-        # await bot.on_event(event)
+        event = WebhookEvent.from_request(data, request)
+        await bot.dispatch(event)
 
 
 def validate_signature(signature, body):
