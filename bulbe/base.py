@@ -59,21 +59,33 @@ class BestStarter(commands.AutoShardedBot):
             self.loop.add_signal_handler(signal.SIGINT, lambda: asyncio.create_task(self.close()))
         except NotImplementedError:
             pass
-        logger.info("Setting up.")
+
+        logger.info("Running bot setup.")
         await self.setup()
+
+        logger.info("Running cog setup.")
+        for name, cog in self.cogs.items():
+            try:
+                await cog.cleanup()
+            except AttributeError:
+                pass
+
         logger.info("Setup complete. Logging in.")
         await super().start(*args, **kwargs)
 
     async def close(self, exit_code=0):
         self._exit_code = exit_code
+
         logger.info("Running bot cleanup.")
         await self.cleanup()
+
         logger.info("Running cog cleanup.")
         for name, cog in self.cogs.items():
             try:
                 await cog.cleanup()
             except AttributeError:
                 pass
+
         logger.info("Closing connection to discord.")
         await super().close()
 

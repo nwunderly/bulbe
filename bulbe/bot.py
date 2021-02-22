@@ -8,7 +8,7 @@ from discord.ext import tasks, commands
 from bulbe.base import BestStarter
 from bulbe.settings import Settings
 from utils.checks import global_checks
-# from utils.db import Database
+from utils.db import Database
 
 logger = logging.getLogger('bot.bulbe')
 
@@ -35,12 +35,12 @@ class Bulbe(BestStarter):
         super().__init__(command_prefix=prefix, case_insensitive=True,
                          description='Best Bot <3', **kwargs)
         self.__token = token
-        # self.__db_url = db_url
+        self.__db_url = db_url
         self._nwunder = None
         self._running = False
         self._user_blacklist = []
         self._guild_blacklist = []
-        # self.db = Database(db_url)
+        self.db = Database(db_url)
         self.help_command = commands.MinimalHelpCommand()
         self.add_check(global_checks)
         logger.info(f'Initialization complete.')

@@ -17,19 +17,19 @@ logger = logging.getLogger('utils.db')
 class Database:
     def __init__(self, database_url):
         self.conn = db.Database(database_url, min_size=5, max_size=20)
-        self.config = None
-        self.infractions = None
-        self.last_infraction_id = None
-        self.role_persist = None
-        self.user_history = None
+        self.guild_config_cache = {}
+        self.infractions_cache = {}
+        self.last_infraction_id_cache = {}
+        self.role_persist_cache = {}
+        self.user_history_cache = {}
 
     async def initialize(self):
         await self.connect()
-        self.config = ConfigTable
-        self.infractions = InfractionsTable
-        self.last_infraction_id = LastInfractionIDTable
-        self.role_persist = RolePersistTable
-        self.user_history = UserHistoryTable
+        # self.guild_config = GuildConfigTable(self)
+        # self.infractions = InfractionsTable(self)
+        # self.last_infraction_id = LastInfractionIDTable(self)
+        # self.role_persist = RolePersistTable(self)
+        # self.user_history = UserHistoryTable(self)
 
     async def connect(self):
         await self.conn.connect()
@@ -41,6 +41,43 @@ class Database:
     def is_connected(self):
         return self.conn.is_connected
 
+    # GUILD CONFIG STUFF
+
+    def get_guild_config(self, guild_id):
+        return self.guild_config_cache.get(guild_id)
+
+    async def _query_fetch_guild_config(self, guild_id):
+        query = r"SELECT * FROM guild_config WHERE guild_id = :guild_id;"
+        return await self.conn.fetch_one(query, {'guild_id': guild_id})
+
+    async def fetch_guild_config(self, guild_id):
+        cached = self.get_guild_config(guild_id)
+        if cached:
+            return cached
+
+        row = await self._query_fetch_guild_config(guild_id)
+
+        if row:
+            config = GuildConfigRow(row)
+            self.guild_config_cache[guild_id] = config
+            return config
+        else:
+            return None
+
+    # MODLOG STUFF
+
+    def get_infraction(self, guild_id, infraction_id):
+        guild = self.guild_config_cache.get(guild_id)
+        return guild.get(infraction_id) if guild else None
+
+    def get_last_infraction_id(self, guild_id):
+        return self.last_infraction_id_cache.get(guild_id)
+
+    # ROLE PERSIST STUFF
+
+    def get_role_persist_data(self, guild_id, user_id):
+        guild = self.role_persist_cache.get(guild_id)
+        return guild.get(user_id) if guild else None
 
 ################
 # DATA CLASSES #
@@ -59,8 +96,57 @@ class Row:
         return row
 
 
-class GuildConfig(Row):
-    pass
+class GuildConfigRow(Row):
+    def __init__(self, record):
+        self.guild_id = record['guild_id']
+        self.muted_role = record['muted_role']
+        self.admin_role = record['admin_role']
+        self.mod_role = record['mod_role']
+        self.ignored_users = record['ignored_users']
+        self.ignored_roles = record['ignored_roles']
+        self.ignored_channels = record['ignored_channels']
+        self.autoroles_user = record['autoroles_user']
+        self.autoroles_bot = record['autoroles_bot']
+        self.role_persist = record['role_persist']
+        self.modlog_channel = record['modlog_channel']
+        self.prefix = record['prefix']
+        
+        
+class InfractionsRow(Row):
+    def __init__(self, record):
+        self.global_id = record['global_id']
+        self.guild_id = record['guild_id']
+        self.infraction_id = record['infraction_id']
+        self.timestamp = record['timestamp']
+        self.user_id = record['user_id']
+        self.mod_id = record['mod_id']
+        self.infraction_type = record['infraction_type']
+        self.reason = record['reason']
+        self.message_id = record['message_id']
+        
+        
+class LastInfractionIDRow(Row):
+    def __init__(self, record):
+        self.guild_id = record['guild_id']
+        self.last_infraction_id = record['last_infraction_id']
+        
+
+class RolePersistRow(Row):
+    def __init__(self, record):
+        self.guild_id = record['guild_id']
+        self.user_id = record['user_id']
+        self.roles = record['roles']
+        
+
+class UserHistoryRow(Row):
+    def __init__(self, record):
+        self.guild_id = record['guild_id']
+        self.user_id = record['user_id']
+        self.mute = record['mute']
+        self.kick = record['kick']
+        self.ban = record['ban']
+        self.unmute = record['unmute']
+        self.unban = record['unban']
 
 
 #############
@@ -110,8 +196,8 @@ role_persist = sql.Table(
     'role_persist',
     sql.MetaData(),
     sql.Column('guild_id', sql.BIGINT, primary_key=True),
-    sql.Column('role_id', sql.BIGINT, primary_key=True),
-    sql.Column('users', sql.ARRAY(sql.BIGINT)),
+    sql.Column('user_id', sql.BIGINT, primary_key=True),
+    sql.Column('roles', sql.ARRAY(sql.BIGINT)),
 )
 
 user_history = sql.Table(
@@ -125,114 +211,3 @@ user_history = sql.Table(
     sql.Column('unmute', sql.ARRAY(sql.BIGINT)),
     sql.Column('unban', sql.ARRAY(sql.BIGINT)),
 )
-
-
-############
-# TABLES #
-############
-
-
-class Table:
-    def __init__(self, name, _db: Database):
-        self.name = name
-        self.db = _db
-        self.conn = _db.conn
-        self.cache = {}
-
-    @staticmethod
-    def where_expr(**checks):
-        exprs = []
-        values = {}
-        for var, value in checks.items():
-            exprs.append(f"{var} = :{var}")
-            values[var] = value
-        where_expr = " AND ".join(exprs)
-        return where_expr, values
-
-    async def fetch_row(self, **checks):
-        where_expr, values = self.where_expr(**checks)
-        query = f"SELECT * FROM {self.name} WHERE {where_expr}"
-        return await self.conn.fetch_one(query, values)
-
-    async def fetch_row_cached(self, **primary_key_checks):
-        primary_key = list(primary_key_checks.keys())
-
-        if primary_key in self.cache:
-            return self.cache[primary_key]
-
-        return await self.fetch_row(**primary_key_checks)
-
-
-class ConfigTable(Table):
-    ROWS = {
-        'guild_id': int,
-        'prefix': str,
-        'muted_role': int,
-        'admin_role': int,
-        'mod_role': int,
-        'ignored_users': List[int],
-        'ignored_roles': List[int],
-        'ignored_channels': List[int],
-        'autoroles_user': List[int],
-        'autoroles_bot': List[int],
-        'role_persist': List[int],
-        'modlog_channel': List[int],
-    }
-
-    def __init__(self, _db):
-        super().__init__('config', _db)
-
-    async def exists(self, guild_id):
-        query = r"SELECT exists(SELECT 1 FROM config WHERE guild_id = $1)"
-        exists = await self.conn.fetch_val(query, guild_id)
-        return exists
-
-    async def new_guild_config(self, guild_id):
-        query = r"INSERT INTO config (guild_id) VALUES (:guild_id) RETURNING *"
-        row = await self.conn.fetch_one(query, {'guild_id': guild_id})
-        config = GuildConfig.from_record(row)
-        self.cache[guild_id] = config
-        return config
-
-    async def get_guild_config(self, guild_id):
-        if guild_id in self.cache:
-            return self.cache[guild_id]
-
-        query = r"SELECT * FROM config WHERE guild_id = :guild_id"
-        row = await self.conn.fetch_one(query, {'guild_id': guild_id})
-        config = GuildConfig.from_record(row)
-        self.cache[guild_id] = config
-        return config
-
-    async def set_prefix(self, guild_id, prefix):
-        if not await self.exists(guild_id):
-            await self.new_guild_config(guild_id)
-        query = r"UPDATE config SET prefix = :prefix WHERE guild_id = :guild_id RETURNING *"
-        row = await self.conn.fetch_one(query, {'guild_id': guild_id, 'prefix': prefix})
-        config = GuildConfig.from_record(row)
-        self.cache[guild_id] = config
-        return config
-
-
-
-class InfractionsTable(Table):
-    def __init__(self, db):
-        super().__init__('infractions', db)
-
-
-class LastInfractionIDTable(Table):
-    def __init__(self, db):
-        super().__init__('last_infraction_id', db)
-
-
-class RolePersistTable(Table):
-    def __init__(self, db):
-        super().__init__('role_persist', db)
-
-
-class UserHistoryTable(Table):
-    def __init__(self, db):
-        super().__init__('user_history', db)
-
-
-
