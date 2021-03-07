@@ -1,6 +1,8 @@
 import discord
 from discord.ext import commands
 
+from bulbe.settings import Settings
+
 
 # global checks for bulbe
 async def global_checks(ctx):
@@ -30,7 +32,7 @@ async def bulbe_perm_check(ctx, permission):
     if await ctx.bot.is_owner(ctx.author):
         return True
     try:
-        return permission in ctx.bot.properties.bot_perms[ctx.author.id]
+        return permission in Settings.bot_perms[ctx.author.id]
     except KeyError:
         return False
 
@@ -80,27 +82,29 @@ mod_or:
 async def config_perm_check(ctx, permission):
     if await bulbe_perm_check(ctx, 'admin'):
         return True
-    try:
-        roles_users = ctx.bot.config.get_config(ctx.guild.id)['roles'][permission]
-    except AttributeError:
-        ctx.bot.logger.debug(
-            f"AttributeError encountered in config_perm_check trying to access config for guild {ctx.guild.id if ctx.guild else None}.")
-        return False
-    except KeyError:
-        ctx.bot.logger.debug(f"KeyError encountered trying to access {permission} permission for guild {ctx.guild.id if ctx.guild else None}.")
-        return False
-    except TypeError:
-        ctx.bot.logger.debug(f"TypeError encountered trying to access {permission} permission for guild {ctx.guild.id if ctx.guild else None}.")
-        return False
-    if not isinstance(roles_users, list):
-        ctx.bot.logger.error(f"Command {ctx.command} tried to check {permission} but that is not a valid permission.")
-        return False
-    if ctx.author.id in roles_users:
-        return True
-    for role in ctx.author.roles:
-        if role.id in roles_users:
-            return True
     return False
+
+    # try:
+    #     roles_users = ctx.bot.config.get_config(ctx.guild.id)['roles'][permission]
+    # except AttributeError:
+    #     ctx.bot.logger.debug(
+    #         f"AttributeError encountered in config_perm_check trying to access config for guild {ctx.guild.id if ctx.guild else None}.")
+    #     return False
+    # except KeyError:
+    #     ctx.bot.logger.debug(f"KeyError encountered trying to access {permission} permission for guild {ctx.guild.id if ctx.guild else None}.")
+    #     return False
+    # except TypeError:
+    #     ctx.bot.logger.debug(f"TypeError encountered trying to access {permission} permission for guild {ctx.guild.id if ctx.guild else None}.")
+    #     return False
+    # if not isinstance(roles_users, list):
+    #     ctx.bot.logger.error(f"Command {ctx.command} tried to check {permission} but that is not a valid permission.")
+    #     return False
+    # if ctx.author.id in roles_users:
+    #     return True
+    # for role in ctx.author.roles:
+    #     if role.id in roles_users:
+    #         return True
+    # return False
 
 
 async def guild_perm_check(ctx, perms, *, check=all):
