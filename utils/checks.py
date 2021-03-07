@@ -11,20 +11,18 @@ async def global_checks(ctx):
         return True
     if ctx.guild is None:
         return False
-    if ctx.bot._locked:
-        return False
-    if ctx.bot.blacklisted(ctx.author.id, ctx.guild.id, ctx.guild.owner.id):
-        try:
-            await ctx.send("I won't respond to commands from blacklisted users or in blacklisted guilds!")
-        except discord.Forbidden:
-            pass
-        return False
-    if ctx.bot.config.command_disabled(ctx):  # checks disabled commands/cogs in config
-        return False
-    if await config_perm_check(ctx, 'administrator'):  # doesn't ignore admins even if configured to do so
-        return True
-    if ctx.bot.config.is_ignored(ctx):  # checks ignored users/channels/roles in config
-        return False
+    #if ctx.bot.blacklisted(ctx.author.id, ctx.guild.id, ctx.guild.owner.id):
+    #    try:
+    #        await ctx.send("I won't respond to commands from blacklisted users or in blacklisted guilds!")
+    #    except discord.Forbidden:
+    #        pass
+    #    return False
+    #if ctx.bot.config.command_disabled(ctx):  # checks disabled commands/cogs in config
+    #    return False
+    #if await config_perm_check(ctx, 'administrator'):  # doesn't ignore admins even if configured to do so
+    #    return True
+    #if ctx.bot.config.is_ignored(ctx):  # checks ignored users/channels/roles in config
+    #    return False
     return True
 
 
