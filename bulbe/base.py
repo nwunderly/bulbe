@@ -66,7 +66,7 @@ class BestStarter(commands.AutoShardedBot):
         logger.info("Running cog setup.")
         for name, cog in self.cogs.items():
             try:
-                await cog.cleanup()
+                await cog.setup()
             except AttributeError:
                 pass
 
@@ -89,8 +89,7 @@ class BestStarter(commands.AutoShardedBot):
         logger.info("Closing connection to discord.")
         await super().close()
 
-    async def load_cog(self, cog_name):
-        # TODO
+    async def load_cog(self, module, cog_name):
         pass
 
     async def load_cogs(self, cog_names):
@@ -104,7 +103,6 @@ class BestStarter(commands.AutoShardedBot):
                 logger.exception(f"-> Failed to load extension {cog}.")
 
     async def unload_cogs(self):
-        # TODO
         pass
 
 

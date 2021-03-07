@@ -13,21 +13,20 @@ from utils.db import Database
 logger = logging.getLogger('bot.bulbe')
 
 
-def prefix(_bot, message, only_guild_prefix=False):
+async def prefix(_bot, message, only_guild_prefix=False):
     default = Settings.prefix
-    return default
-    # if not message.guild:
-    #     return commands.when_mentioned(_bot, message) + [default]
-    # if _bot.config:
-    #     config = _bot.config.get_config(message.guild)
-    #     p = config['prefix']
-    # else:
-    #     p = None
-    # p = p if p else default
-    # if only_guild_prefix:
-    #     return p
-    # else:
-    #     return commands.when_mentioned(_bot, message) + [p]
+    # return default
+    if not message.guild:
+        return commands.when_mentioned(_bot, message) + [default]
+    config = await _bot.db.fetch_config(message.guild.id)
+    if config:
+        p = config.prefix
+    else:
+        p = default
+    if only_guild_prefix:
+        return p
+    else:
+        return commands.when_mentioned(_bot, message) + [p]
 
 
 class Bulbe(BestStarter):
@@ -85,10 +84,11 @@ class Bulbe(BestStarter):
 
     async def process_mention(self, message):
         if message.content in [self.user.mention, '<@!%s>' % self.user.id]:
-            await message.channel.send(embed=self.get_embed(message))
+            e = await self.get_embed(message)
+            await message.channel.send(embed=e)
 
-    def get_embed(self, message=None):
-        p = self.command_prefix(self, message, only_guild_prefix=True)
+    async def get_embed(self, message=None):
+        p = await self.command_prefix(self, message, only_guild_prefix=True)
         e = discord.Embed(title=f"Bulbe v{Settings.version}",
                           color=Settings.embed_color,
                           description=f"Prefix: `{p}`")
@@ -136,7 +136,7 @@ class Bulbe(BestStarter):
 
     async def setup(self):
         logger.info('Connecting to database.')
-        # await self.db.connect()
+        await self.db.connect()
         # self.load_blacklists()
         await self.load_cogs(Settings.cogs)
 

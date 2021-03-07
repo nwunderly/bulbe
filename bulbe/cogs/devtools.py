@@ -2,10 +2,12 @@ import discord
 import aiohttp
 import inspect
 import os
+import io
 
 from discord.ext import commands
 from typing import Union
 
+from auth import WOLFRAM_APP_ID
 from utils.converters import FetchedUser
 from utils.constants import red_tick
 from bulbe.base import Cog
@@ -14,7 +16,13 @@ from bulbe.base import Cog
 class DevTools(Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.session = None
+
+    async def setup(self):
         self.session = aiohttp.ClientSession()
+
+    async def cleanup(self):
+        await self.session.close()
 
     @commands.command()
     async def oauth(self, ctx, bot: Union[discord.User, FetchedUser], *perms):
@@ -93,18 +101,6 @@ class DevTools(Cog):
         if isinstance(error, commands.UserInputError):
             await ctx.send("Could not locate a snowflake based on that query.")
 
-    async def channel(self, ctx, *, target):
-        pass
-
-    async def role(self, ctx, *, target):
-        pass
-
-    async def member(self, ctx, *, target):
-        pass
-
-    async def user(self, ctx, *, target):
-        pass
-
     @commands.command(name='source', aliases=['src'])
     async def get_source(self, ctx, name=None):
         if not name:
@@ -131,6 +127,16 @@ class DevTools(Cog):
                 await ctx.send("Command or module is not yet on github.")
                 return
         await ctx.send(f"<{git_link}>")
+
+    @commands.command()
+    async def wolfram(self, ctx, *, query):
+        async with self.session.get(f"https://api.wolframalpha.com/v1/simple?appid={WOLFRAM_APP_ID}&i={query}") as resp:
+            try:
+                img = await resp.read()
+            except Exception as e:
+                await ctx.send(f"```py\n{e.__class__}: {e}\n```")
+
+            await ctx.send(file=discord.File(io.BytesIO(img), filename="wolfram.png"))
 
 
 def setup(bot):

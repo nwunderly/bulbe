@@ -14,7 +14,6 @@ from bulbe.settings import Settings
 from bulbe.base import Cog
 
 
-
 class Fun(Cog):
     def __init__(self, bot):
         self.bot = bot

@@ -4,7 +4,7 @@ from argparse import ArgumentParser
 import uvicorn
 
 from bulbe.bot import Bulbe  # bulbe
-from github.app import app  # fastapi app for github integration
+# from github.app import app  # fastapi app for github integration
 from utils.helpers import setup_logger
 from auth import TOKEN_DEV, TOKEN_PROD, DB_URL_DEV, DB_URL_PROD
 
@@ -51,19 +51,19 @@ def start_discord(args):
         exit(exit_code)
 
 
-def start_github(args):
-    dev = args.dev
-    log = args.log
-
-    if not log:
-        log = 'debug' if dev else 'info'
-
-    level = log_levels[log]
-
-    setup_logger("github", level)
-    setup_logger("utils", level)
-
-    uvicorn.run(app, host='0.0.0.0', port=9000)
+# def start_github(args):
+#     dev = args.dev
+#     log = args.log
+#
+#     if not log:
+#         log = 'debug' if dev else 'info'
+#
+#     level = log_levels[log]
+#
+#     setup_logger("github", level)
+#     setup_logger("utils", level)
+#
+#     uvicorn.run(app, host='0.0.0.0', port=9000)
 
 
 def main():
@@ -76,10 +76,10 @@ def main():
     discord.add_argument('--dev', action='store_true')
     discord.set_defaults(execute=start_discord)
 
-    github = subcommands.add_parser('github')
-    github.add_argument('--log')
-    github.add_argument('--dev', action='store_true')
-    github.set_defaults(execute=start_github)
+    # github = subcommands.add_parser('github')
+    # github.add_argument('--log')
+    # github.add_argument('--dev', action='store_true')
+    # github.set_defaults(execute=start_github)
 
     args = parser.parse_args()
     args.execute(args)

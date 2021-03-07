@@ -8,10 +8,10 @@ docker run -d \
  --restart unless-stopped \
  bulbe discord
 
-docker run -d \
- --name bulbe_github \
- --network prod \
- -v $PWD/logs/github:/bulbe/logs \
- -v $PWD/data:/data \
- --restart unless-stopped \
- bulbe github --dev --log debug
+#docker run -d \
+# --name bulbe_github \
+# --network prod \
+# -v $PWD/logs/github:/bulbe/logs \
+# -v $PWD/data:/data \
+# --restart unless-stopped \
+# bulbe github --dev --log debug

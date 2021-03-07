@@ -3,7 +3,7 @@ import discord
 
 class Settings:
     version = '3.0.0'
-    prefix = "="
+    prefix = "+"
 
     embed_color = discord.Color(int('2ecc71', 16))
 

@@ -17,7 +17,7 @@ logger = logging.getLogger('utils.db')
 class Database:
     def __init__(self, database_url):
         self.conn = db.Database(database_url, min_size=5, max_size=20)
-        self.guild_config_cache = {}
+        self.config_cache = {}
         self.infractions_cache = {}
         self.last_infraction_id_cache = {}
         self.role_persist_cache = {}
@@ -25,7 +25,7 @@ class Database:
 
     async def initialize(self):
         await self.connect()
-        # self.guild_config = GuildConfigTable(self)
+        # self.config = ConfigTable(self)
         # self.infractions = InfractionsTable(self)
         # self.last_infraction_id = LastInfractionIDTable(self)
         # self.role_persist = RolePersistTable(self)
@@ -41,33 +41,36 @@ class Database:
     def is_connected(self):
         return self.conn.is_connected
 
-    # GUILD CONFIG STUFF
+    # GUILD CONFIG STUFFs
 
-    def get_guild_config(self, guild_id):
-        return self.guild_config_cache.get(guild_id)
+    def in_config_cache(self, guild_id):
+        return guild_id in self.config_cache
 
-    async def _query_fetch_guild_config(self, guild_id):
-        query = r"SELECT * FROM guild_config WHERE guild_id = :guild_id;"
+    def get_config(self, guild_id):
+        return self.config_cache.get(guild_id)
+
+    async def _query_fetch_config(self, guild_id):
+        query = r"SELECT * FROM config WHERE guild_id = :guild_id;"
         return await self.conn.fetch_one(query, {'guild_id': guild_id})
 
-    async def fetch_guild_config(self, guild_id):
-        cached = self.get_guild_config(guild_id)
-        if cached:
-            return cached
+    async def fetch_config(self, guild_id):
+        if self.in_config_cache(guild_id):
+            return self.get_config(guild_id)
 
-        row = await self._query_fetch_guild_config(guild_id)
+        row = await self._query_fetch_config(guild_id)
 
         if row:
-            config = GuildConfigRow(row)
-            self.guild_config_cache[guild_id] = config
-            return config
+            _config = ConfigRow(row)
+            self.config_cache[guild_id] = _config
+            return _config
         else:
+            self.config_cache[guild_id] = None
             return None
 
     # MODLOG STUFF
 
     def get_infraction(self, guild_id, infraction_id):
-        guild = self.guild_config_cache.get(guild_id)
+        guild = self.config_cache.get(guild_id)
         return guild.get(infraction_id) if guild else None
 
     def get_last_infraction_id(self, guild_id):
@@ -78,6 +81,7 @@ class Database:
     def get_role_persist_data(self, guild_id, user_id):
         guild = self.role_persist_cache.get(guild_id)
         return guild.get(user_id) if guild else None
+
 
 ################
 # DATA CLASSES #
@@ -96,7 +100,7 @@ class Row:
         return row
 
 
-class GuildConfigRow(Row):
+class ConfigRow(Row):
     def __init__(self, record):
         self.guild_id = record['guild_id']
         self.muted_role = record['muted_role']
@@ -154,8 +158,8 @@ class UserHistoryRow(Row):
 #############
 
 
-guild_config = sql.Table(
-    'guild_config',
+config = sql.Table(
+    'config',
     sql.MetaData(),
     sql.Column('guild_id', sql.BIGINT, primary_key=True),
     sql.Column('muted_role', sql.BIGINT),
