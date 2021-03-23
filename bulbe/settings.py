@@ -2,10 +2,10 @@ import discord
 
 
 class Settings:
-    version = '3.0.0'
+    version = '3.0.1'
     prefix = "+"
 
-    embed_color = discord.Color(int('2ecc71', 16))
+    embed_color = discord.Color(0x2ecc71)
 
     logging_channel = 559509631466995749
     invite_permissions = 2110258423

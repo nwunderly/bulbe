@@ -71,3 +71,20 @@ async def fetch_previous_message(message, cache=None):
         if m.id == message.id:
             use_next = True
     return None
+
+
+def approximate_timedelta(start, end):
+    dt = end - start
+
+    if dt.days >= 7:
+        delta = f"{(_w := dt.days // 7)} week" + ('s' if _w > 1 else '')
+    elif dt.days >= 1:
+        delta = f"{(_d := dt.days)} day" + ('s' if _d > 1 else '')
+    elif dt.seconds > 3599:
+        delta = f"{(_h := dt.seconds // 3600)} hour" + ('s' if _h > 1 else '')
+    elif dt.seconds > 59:
+        delta = f"{(_m := dt.seconds // 60)} minute" + ('s' if _m > 1 else '')
+    else:
+        delta = f"{dt.seconds} seconds"
+
+    return delta

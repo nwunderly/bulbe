@@ -62,8 +62,8 @@ class Bulbe(BestStarter):
             await self.process_direct_messages(message)
 
     async def on_command_completion(self, ctx):
-        logger.debug(f"Command '{ctx.command.qualified_name}' invoked / "
-                     f"author {ctx.author.id}, guild {ctx.guild.id if ctx.guild else None}, channel {ctx.channel.id}, message {ctx.message.id}")
+        logger.info(f"Command '{ctx.command.qualified_name}' invoked / "
+                    f"author {ctx.author.id}, guild {ctx.guild.id if ctx.guild else None}, channel {ctx.channel.id}, message {ctx.message.id}")
         # await self.update_stats(ctx)
 
     async def process_direct_messages(self, message):
