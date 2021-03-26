@@ -2,7 +2,6 @@ import logging
 
 import databases as db
 import sqlalchemy as sql
-from typing import List
 from datetime import datetime
 
 
@@ -66,6 +65,10 @@ class Database:
         else:
             self.config_cache[guild_id] = None
             return None
+
+    async def update_config_prefix(self, guild_id, prefix):
+        query = "UPDATE config SET prefix = :prefix WHERE guild_id = :guild_id"
+        return await self.conn.execute(query, {'guild_id': guild_id, 'prefix': prefix})
 
     # MODLOG STUFF
 
@@ -157,10 +160,11 @@ class UserHistoryRow(Row):
 # ORM STUFF #
 #############
 
+metadata = sql.MetaData()
+
 
 config = sql.Table(
-    'config',
-    sql.MetaData(),
+    'config', metadata,
     sql.Column('guild_id', sql.BIGINT, primary_key=True),
     sql.Column('muted_role', sql.BIGINT),
     sql.Column('admin_role', sql.BIGINT),
@@ -176,8 +180,7 @@ config = sql.Table(
 )
 
 infractions = sql.Table(
-    'infractions',
-    sql.MetaData(),
+    'infractions', metadata,
     sql.Column('global_id', sql.BIGINT),
     sql.Column('guild_id', sql.BIGINT, primary_key=True),
     sql.Column('infraction_id', sql.BIGINT, primary_key=True),
@@ -190,23 +193,20 @@ infractions = sql.Table(
 )
 
 last_infraction_id = sql.Table(
-    'last_infraction_id',
-    sql.MetaData(),
+    'last_infraction_id', metadata,
     sql.Column('guild_id', sql.BIGINT, primary_key=True),
     sql.Column('last_infraction_id', sql.BIGINT),
 )
 
 role_persist = sql.Table(
-    'role_persist',
-    sql.MetaData(),
+    'role_persist', metadata,
     sql.Column('guild_id', sql.BIGINT, primary_key=True),
     sql.Column('user_id', sql.BIGINT, primary_key=True),
     sql.Column('roles', sql.ARRAY(sql.BIGINT)),
 )
 
 user_history = sql.Table(
-    'user_history',
-    sql.MetaData(),
+    'user_history', metadata,
     sql.Column('guild_id', sql.BIGINT, primary_key=True),
     sql.Column('user_id', sql.BIGINT, primary_key=True),
     sql.Column('mute', sql.ARRAY(sql.BIGINT)),
