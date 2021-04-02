@@ -1,16 +1,13 @@
 import typing
 import aiohttp
-import discord
+import aionasa
 
 from discord.ext import commands
-from aionasa.utils import date_strptime
 
-from utils.constants import red_tick
+from auth import NASA_API_KEY
 from utils.helpers import fetch_previous_message
 from utils.converters import Language
 from utils.translate import Translate
-from utils.nasa import NASA
-from bulbe.settings import Settings
 from bulbe.base import Cog
 
 
@@ -20,7 +17,7 @@ class Fun(Cog):
         self.session = aiohttp.ClientSession()
 
         self.translate_api = Translate()
-        self.nasa_api = NASA(self.session)
+        self.nasa_apod_api = aionasa.APOD(NASA_API_KEY, self.session)
 
     async def cleanup(self):
         await self.session.close()
@@ -42,22 +39,6 @@ class Fun(Cog):
         """Let me google that for you."""
         q = "+".join(search.split())
         await ctx.send(f"<https://lmgtfy.com/?q={q}>")
-
-    @commands.command()
-    async def apod(self, ctx, *, date='today'):
-        """Astronomy picture of the day. Date format should be mm-dd-yyyy, mm/dd/yyyy."""
-        try:
-            date = date_strptime(date)
-        except ValueError:
-            await ctx.send(f"{red_tick} Error converting date. Please make sure you're using a supported format.")
-            return
-        picture = await self.nasa_api.apod.get(date)
-        title = picture.title
-        explanation = picture.explanation
-        site_url = picture.html_url
-        img_url = picture.hdurl
-        embed = discord.Embed(title=title, description=explanation, url=site_url, color=Settings.embed_color).set_image(url=img_url)
-        await ctx.send(embed=embed)
 
 
 def setup(bot):

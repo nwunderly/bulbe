@@ -2,7 +2,7 @@ import discord
 
 
 class Settings:
-    version = '3.0.1'
+    version = '3.1.0'
     prefix = "+"
 
     embed_color = discord.Color(0x2ecc71)
@@ -17,6 +17,7 @@ class Settings:
         'bulbe.cogs.devtools',
         'bulbe.cogs.fun',
         # 'bulbe.cogs.manager',
+        'bulbe.cogs.nasa',
         # 'bulbe.cogs.utilities',
     ]
 
