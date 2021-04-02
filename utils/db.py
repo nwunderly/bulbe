@@ -2,7 +2,7 @@ import logging
 
 import databases as db
 import sqlalchemy as sql
-from sql import select
+from sqlalchemy import select
 from datetime import datetime
 
 
