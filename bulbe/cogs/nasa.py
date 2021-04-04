@@ -60,12 +60,13 @@ class NASA(Cog):
             await self.dispatch_apod(pic)
 
     async def dispatch_apod(self, picture):
+        content = "<@&771796371724173333> New Astronomy Picture of the Day!"
         title = picture.title
         explanation = picture.explanation
         site_url = picture.html_url
         img_url = picture.hdurl
         embed = discord.Embed(title=title, description=explanation, url=site_url, color=Settings.embed_color).set_image(url=img_url)
-        await self.bot.get_channel(827644536263671858).send(embed=embed)
+        await self.bot.get_channel(827644536263671858).send(content, embed=embed)
 
     async def update_last_apod_date(self, date):
         self.last_apod_date = f"{date.year},{date.month},{date.day}"
