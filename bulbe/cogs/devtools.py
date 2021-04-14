@@ -119,7 +119,8 @@ class DevTools(Cog):
             await ctx.send("I couldn't find a command or module with that name.")
             return
         path = inspect.getsourcefile(obj).replace('\\', '/')
-        git_link = f"https://github.com/nwunderly/bulbe/tree/master{path}"
+        git_path = path.replace(os.getcwd().replace('\\', '/'), '', 1)
+        git_link = f"https://github.com/nwunderly/bulbe/tree/master/{git_path}"
         print(git_link)
         async with self.session.get(git_link) as response:
             if response.status == 404:
