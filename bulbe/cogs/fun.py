@@ -1,14 +1,14 @@
 import typing
+
 import aiohttp
 import aionasa
-
+from auth import NASA_API_KEY
 from discord.ext import commands
 
-from auth import NASA_API_KEY
-from utils.helpers import fetch_previous_message
-from utils.converters import Language
-from utils.translate import Translate
 from bulbe.base import Cog
+from utils.converters import Language
+from utils.helpers import fetch_previous_message
+from utils.translate import Translate
 
 
 class Fun(Cog):
@@ -22,12 +22,18 @@ class Fun(Cog):
     async def cleanup(self):
         await self.session.close()
 
-    @commands.command(aliases=['t'])
-    async def translate(self, ctx, lang: typing.Optional[Language] = 'en', *, text: commands.clean_content = None):
+    @commands.command(aliases=["t"])
+    async def translate(
+        self,
+        ctx,
+        lang: typing.Optional[Language] = "en",
+        *,
+        text: commands.clean_content = None,
+    ):
         """Translates a message into a language of your choice.
         Defaults to English. If no text to translate is specified, uses the current channel's previous message."""
         if not lang:
-            lang = 'en'
+            lang = "en"
         if not text:
             prev = await fetch_previous_message(ctx.message)
             text = prev.content

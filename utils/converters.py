@@ -1,20 +1,23 @@
-import re
 import datetime
+import re
+
 import discord
-from discord.ext import commands
 from aionasa.utils import date_strptime
+from discord.ext import commands
 
 
 class FetchedUser(commands.Converter):
     async def convert(self, ctx, argument):
         if not argument.isdigit():
-            raise commands.BadArgument('Not a valid user ID.')
+            raise commands.BadArgument("Not a valid user ID.")
         try:
             return await ctx.bot.fetch_user(argument)
         except discord.NotFound:
-            raise commands.BadArgument('User not found.') from None
+            raise commands.BadArgument("User not found.") from None
         except discord.HTTPException:
-            raise commands.BadArgument('An error occurred while fetching the user.') from None
+            raise commands.BadArgument(
+                "An error occurred while fetching the user."
+            ) from None
 
 
 class GlobalChannel(commands.Converter):
@@ -26,17 +29,21 @@ class GlobalChannel(commands.Converter):
             try:
                 channel_id = int(argument, base=10)
             except ValueError:
-                raise commands.BadArgument(f'Could not find a channel by ID {argument!r}.')
+                raise commands.BadArgument(
+                    f"Could not find a channel by ID {argument!r}."
+                )
             else:
                 channel = ctx.bot.get_channel(channel_id)
                 if channel is None:
-                    raise commands.BadArgument(f'Could not find a channel by ID {argument!r}.')
+                    raise commands.BadArgument(
+                        f"Could not find a channel by ID {argument!r}."
+                    )
                 return channel
 
 
 class OptionFlag(commands.Converter):
     async def convert(self, ctx, argument):
-        if not argument.startswith('--'):
+        if not argument.startswith("--"):
             raise commands.BadArgument()
         return argument[2:]
 
@@ -90,5 +97,3 @@ class Duration(commands.Converter):
             raise commands.BadArgument
 
         return datetime.timedelta(hours=h, minutes=m, seconds=s)
-
-

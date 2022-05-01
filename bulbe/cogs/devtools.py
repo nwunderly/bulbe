@@ -1,16 +1,16 @@
-import discord
-import aiohttp
 import inspect
-import os
 import io
-
-from discord.ext import commands
+import os
 from typing import Union
 
+import aiohttp
+import discord
 from auth import WOLFRAM_APP_ID
-from utils.converters import FetchedUser
-from utils.constants import red_tick
+from discord.ext import commands
+
 from bulbe.base import Cog
+from utils.constants import red_tick
+from utils.converters import FetchedUser
 
 
 class DevTools(Cog):
@@ -49,8 +49,8 @@ class DevTools(Cog):
         else:
             p = None
         link = discord.utils.oauth_url(bot.id, permissions=p)
-        link = '<' + link + '>'
-        await ctx.send(f"Invite link for `{bot}`:\n"+link)
+        link = "<" + link + ">"
+        await ctx.send(f"Invite link for `{bot}`:\n" + link)
 
     @commands.command()
     async def oauthperms(self, ctx, *perms):
@@ -80,17 +80,30 @@ class DevTools(Cog):
 
     class FindIDArgs(commands.Converter):
         async def convert(self, ctx, argument):
-            if argument == 'guild':
+            if argument == "guild":
                 return ctx.guild
-            elif argument == 'channel':
+            elif argument == "channel":
                 return ctx.channel
-            elif argument == 'me':
+            elif argument == "me":
                 return ctx.author
             else:
                 raise commands.BadArgument
 
-    @commands.group(name='id')
-    async def find_id(self, ctx, *, target: Union[FindIDArgs, discord.TextChannel, discord.VoiceChannel, discord.Role, discord.Member, discord.User, discord.PartialEmoji]):
+    @commands.group(name="id")
+    async def find_id(
+        self,
+        ctx,
+        *,
+        target: Union[
+            FindIDArgs,
+            discord.TextChannel,
+            discord.VoiceChannel,
+            discord.Role,
+            discord.Member,
+            discord.User,
+            discord.PartialEmoji,
+        ],
+    ):
         """Attempts to convert your query to a discord object and returns its id.
         Search order: Special args, TextChannel, VoiceChannel, Role, Member, User, Emoji.
         Special args: 'guild', 'channel', 'me'"""
@@ -101,13 +114,15 @@ class DevTools(Cog):
         if isinstance(error, commands.UserInputError):
             await ctx.send("Could not locate a snowflake based on that query.")
 
-    @commands.command(name='source', aliases=['src'])
+    @commands.command(name="source", aliases=["src"])
     async def get_source(self, ctx, name=None):
         if not name:
             await ctx.send("<https://github.com/nwunderly/bulbe>")
             return
-        if name == 'help':
-            await ctx.send(f"<https://github.com/Rapptz/discord.py/blob/master/discord/ext/commands/help.py>")
+        if name == "help":
+            await ctx.send(
+                f"<https://github.com/Rapptz/discord.py/blob/master/discord/ext/commands/help.py>"
+            )
             return
         command = self.bot.get_command(name)
         cog = self.bot.get_cog(name)
@@ -118,8 +133,8 @@ class DevTools(Cog):
         else:
             await ctx.send("I couldn't find a command or module with that name.")
             return
-        path = inspect.getsourcefile(obj).replace('\\', '/')
-        git_path = path.replace(os.getcwd().replace('\\', '/'), '', 1)
+        path = inspect.getsourcefile(obj).replace("\\", "/")
+        git_path = path.replace(os.getcwd().replace("\\", "/"), "", 1)
         git_link = f"https://github.com/nwunderly/bulbe/tree/master/{git_path}"
         print(git_link)
         async with self.session.get(git_link) as response:
@@ -130,7 +145,9 @@ class DevTools(Cog):
 
     @commands.command()
     async def wolfram(self, ctx, *, query):
-        async with self.session.get(f"https://api.wolframalpha.com/v1/simple?appid={WOLFRAM_APP_ID}&i={query}") as resp:
+        async with self.session.get(
+            f"https://api.wolframalpha.com/v1/simple?appid={WOLFRAM_APP_ID}&i={query}"
+        ) as resp:
             try:
                 img = await resp.read()
             except Exception as e:

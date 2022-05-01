@@ -6,13 +6,14 @@ import traceback
 
 from discord.ext import commands
 
-logger = logging.getLogger('bot.base')
+logger = logging.getLogger("bot.base")
 
 
 class BestStarter(commands.AutoShardedBot):
     """
     Base class for Bulbe, handles low-level stuff
     """
+
     def __init__(self, command_prefix=None, **kwargs):
         super().__init__(command_prefix, **kwargs)
         self._exit_code = 0
@@ -22,16 +23,18 @@ class BestStarter(commands.AutoShardedBot):
         """
         Override this to override discord.Client on_ready.
         """
-        logger.info('Logged in as {0.user}.'.format(self))
+        logger.info("Logged in as {0.user}.".format(self))
 
     async def on_error(self, event_method, *args, **kwargs):
         logger.error(f"Ignoring exception in {event_method}:\n{traceback.format_exc()}")
 
     async def on_command_error(self, ctx, exception):
         if isinstance(exception, commands.CommandInvokeError):
-            logger.error(f"Error invoking command '{ctx.command.qualified_name}' / "
-                         f"author {ctx.author.id}, guild {ctx.guild.id if ctx.guild else None}, channel {ctx.channel.id}, message {ctx.message.id}\n"
-                         f"{traceback.format_exception(type(exception), exception, exception.__traceback__)}")
+            logger.error(
+                f"Error invoking command '{ctx.command.qualified_name}' / "
+                f"author {ctx.author.id}, guild {ctx.guild.id if ctx.guild else None}, channel {ctx.channel.id}, message {ctx.message.id}\n"
+                f"{traceback.format_exception(type(exception), exception, exception.__traceback__)}"
+            )
 
     async def setup(self):
         """
@@ -56,7 +59,9 @@ class BestStarter(commands.AutoShardedBot):
         logger.debug("Start method called.")
         try:
             self.loop.remove_signal_handler(signal.SIGINT)
-            self.loop.add_signal_handler(signal.SIGINT, lambda: asyncio.create_task(self.close()))
+            self.loop.add_signal_handler(
+                signal.SIGINT, lambda: asyncio.create_task(self.close())
+            )
         except NotImplementedError:
             pass
 

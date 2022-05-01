@@ -1,22 +1,20 @@
-import io
 import asyncio
+import contextlib
+import copy
+import io
+import logging
 import subprocess
 import textwrap
-import contextlib
 import traceback
 import typing
-import copy
-import logging
 
 import discord
 from discord.ext import commands
 
-from utils import checks
-from utils import paginator
-from utils import converters
 from bulbe.base import Cog
+from utils import checks, converters, paginator
 
-logger = logging.getLogger('cogs.admin')
+logger = logging.getLogger("cogs.admin")
 
 
 class Admin(Cog):
@@ -31,34 +29,38 @@ class Admin(Cog):
     def cleanup_code(content):
         """Automatically removes code blocks from the code."""
         # remove ```py\n```
-        if content.startswith('```') and content.endswith('```'):
-            return '\n'.join(content.split('\n')[1:-1])
+        if content.startswith("```") and content.endswith("```"):
+            return "\n".join(content.split("\n")[1:-1])
 
         # remove `foo`
-        return content.strip('` \n')
+        return content.strip("` \n")
 
     async def run_process(self, command):
         try:
-            process = await asyncio.create_subprocess_shell(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            process = await asyncio.create_subprocess_shell(
+                command, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            )
             result = await process.communicate()
         except NotImplementedError:
-            process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            process = subprocess.Popen(
+                command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            )
             result = await self.bot.loop.run_in_executor(None, process.communicate)
 
         return [output.decode() for output in result]
 
-    @commands.command(pass_context=True, name='eval', aliases=['e', 'py'])
+    @commands.command(pass_context=True, name="eval", aliases=["e", "py"])
     async def _eval(self, ctx, *, body: str):
         """Runs arbitrary python code"""
 
         env = {
-            'bot': self.bot,
-            'ctx': ctx,
-            'channel': ctx.channel,
-            'author': ctx.author,
-            'guild': ctx.guild,
-            'message': ctx.message,
-            '_ret': self._last_result
+            "bot": self.bot,
+            "ctx": ctx,
+            "channel": ctx.channel,
+            "author": ctx.author,
+            "guild": ctx.guild,
+            "message": ctx.message,
+            "_ret": self._last_result,
         }
 
         env.update(globals())
@@ -71,24 +73,24 @@ class Admin(Cog):
         try:
             exec(to_compile, env)
         except Exception as e:
-            return await ctx.send(f'```py\n{e.__class__.__name__}: {e}\n```')
+            return await ctx.send(f"```py\n{e.__class__.__name__}: {e}\n```")
 
-        func = env['func']
+        func = env["func"]
         try:
             with contextlib.redirect_stdout(stdout):
                 ret = await func()
         except Exception:
             value = stdout.getvalue()
-            await ctx.send(f'```py\n{value}{traceback.format_exc()}\n```')
+            await ctx.send(f"```py\n{value}{traceback.format_exc()}\n```")
         else:
             value = stdout.getvalue()
 
             if ret is None:
                 if value:
-                    await ctx.send(f'```py\n{value}\n```')
+                    await ctx.send(f"```py\n{value}\n```")
             else:
                 self._last_result = ret
-                await ctx.send(f'```py\n{value}{ret}\n```')
+                await ctx.send(f"```py\n{value}{ret}\n```")
 
     @commands.command()
     async def sh(self, ctx, *, command):
@@ -98,7 +100,7 @@ class Admin(Cog):
             stdout, stderr = await self.run_process(command)
 
         if stderr:
-            text = f'stdout:\n{stdout}\nstderr:\n{stderr}'
+            text = f"stdout:\n{stdout}\nstderr:\n{stderr}"
         else:
             text = stdout
 
@@ -114,9 +116,9 @@ class Admin(Cog):
         try:
             self.bot.load_extension(cog)
         except commands.ExtensionError as e:
-            await ctx.send(f'{e.__class__.__name__}: {e}')
+            await ctx.send(f"{e.__class__.__name__}: {e}")
         else:
-            await ctx.send(f'Loaded {cog}.')
+            await ctx.send(f"Loaded {cog}.")
 
     @commands.command()
     async def unload(self, ctx, *, cog):
@@ -124,22 +126,29 @@ class Admin(Cog):
         try:
             self.bot.unload_extension(cog)
         except commands.ExtensionError as e:
-            await ctx.send(f'{e.__class__.__name__}: {e}')
+            await ctx.send(f"{e.__class__.__name__}: {e}")
         else:
-            await ctx.send(f'Unloaded {cog}.')
+            await ctx.send(f"Unloaded {cog}.")
 
-    @commands.command(name='reload')
+    @commands.command(name="reload")
     async def _reload(self, ctx, *, cog):
         """Reloads a cog."""
         try:
             self.bot.reload_extension(cog)
         except commands.ExtensionError as e:
-            await ctx.send(f'{e.__class__.__name__}: {e}')
+            await ctx.send(f"{e.__class__.__name__}: {e}")
         else:
-            await ctx.send(f'Reloaded {cog}.')
+            await ctx.send(f"Reloaded {cog}.")
 
     @commands.command()
-    async def sudo(self, ctx, channel: typing.Optional[converters.GlobalChannel], who: discord.User, *, command: str):
+    async def sudo(
+        self,
+        ctx,
+        channel: typing.Optional[converters.GlobalChannel],
+        who: discord.User,
+        *,
+        command: str,
+    ):
         """Run a command as another user in another channel."""
         msg = copy.copy(ctx.message)
         channel = channel or ctx.channel

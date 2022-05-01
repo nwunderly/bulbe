@@ -1,51 +1,45 @@
-import discord
-import traceback
 import logging
-
-from typing import Union
+import traceback
 from collections import defaultdict
-from discord import Member, TextChannel, Role
+from typing import Union
+
+import discord
+from discord import Member, Role, TextChannel
 from discord.ext import commands
 
+from bulbe.base import Cog
 from utils import checks
 from utils.constants import green_tick, red_tick
-from utils.converters import Module, Command
-from bulbe.base import Cog
+from utils.converters import Command, Module
 
 # TODO: HUGE REWORK HERE
 
-logger = logging.getLogger('cogs.config')
+logger = logging.getLogger("cogs.config")
 
 
 DEFAULT_CONFIG = {
     # meta
-    'prefix': None,
-
-    'ignored': {
-        'channels': list(),
-        'users': list(),
-        'roles': list(),
+    "prefix": None,
+    "ignored": {
+        "channels": list(),
+        "users": list(),
+        "roles": list(),
     },
-
-    'disabled': {
-        'modules': list(),
-        'commands': list(),
+    "disabled": {
+        "modules": list(),
+        "commands": list(),
     },
-
-    'roles': {
-        'administrator': list(),
-        'moderator': list(),
+    "roles": {
+        "administrator": list(),
+        "moderator": list(),
     },
-
-    'muted-role': None,
-
-    'utilities': {
+    "muted-role": None,
+    "utilities": {
         # 'claimable': dict(),
         # 'react': dict(),
-        'autorole': list(),
-        'persist': list(),
+        "autorole": list(),
+        "persist": list(),
     },
-
     # 'modlog': {
     #     0: {
     #         # 'webhook': None,
@@ -54,7 +48,6 @@ DEFAULT_CONFIG = {
     #         'events': list(),
     #     },
     # },
-
     # 'automod': {
     #     'blacklisted-content': list(),
     #     'delete-server-invites': False,
@@ -80,7 +73,7 @@ class ConfigManager:
 
     def read(self):
         try:
-            data = self.table.read_to_dict('config')
+            data = self.table.read_to_dict("config")
             for guild_id, guild_config in data.items():
                 self.get_config(guild_id).update(guild_config)
             return True
@@ -91,7 +84,7 @@ class ConfigManager:
     def write(self):
         try:
             self.update_names()
-            self.table.write_from_dict(self._configs, 'config')
+            self.table.write_from_dict(self._configs, "config")
             return True
         except Exception:
             traceback.print_exc()
@@ -100,7 +93,7 @@ class ConfigManager:
     def write_guild(self, guild):
         try:
             self.update_name(guild.id)
-            self.table.put(self.get_config(guild), [guild.id, 'config'])
+            self.table.put(self.get_config(guild), [guild.id, "config"])
             return True
         except Exception:
             return False
@@ -112,7 +105,7 @@ class ConfigManager:
     def update_name(self, guild_id):
         guild = self.bot.get_guild(guild_id)
         if guild:
-            self.get_config(guild)['name'] = guild.name
+            self.get_config(guild)["name"] = guild.name
 
     def get_config(self, guild):
         if isinstance(guild, int):
@@ -150,18 +143,18 @@ class ConfigManager:
 
     def command_disabled(self, ctx):
         """Returns True if the command has been disabled."""
-        disabled = self.get_config(ctx.guild)['disabled']
+        disabled = self.get_config(ctx.guild)["disabled"]
         if disabled is None or not isinstance(disabled, dict):
             return False
         try:
-            if ctx.cog.qualified_name in disabled['modules']:
+            if ctx.cog.qualified_name in disabled["modules"]:
                 return True
         except KeyError:
             pass
         except AttributeError:
             pass
         try:
-            if ctx.command.qualified_name in disabled['commands']:
+            if ctx.command.qualified_name in disabled["commands"]:
                 return True
         except KeyError:
             pass
@@ -171,18 +164,18 @@ class ConfigManager:
 
     def is_ignored(self, ctx):
         """Returns True if the channel, user, or one of the user's roles should be ignored."""
-        ignored = self.get_config(ctx.guild)['ignored']
+        ignored = self.get_config(ctx.guild)["ignored"]
         if ignored is None or not isinstance(ignored, dict):
             return False
         try:
-            if ctx.channel.id in ignored['channels']:
+            if ctx.channel.id in ignored["channels"]:
                 return True
         except KeyError:
             pass
         except AttributeError:
             pass
         try:
-            if ctx.author.id in ignored['users']:
+            if ctx.author.id in ignored["users"]:
                 return True
         except KeyError:
             pass
@@ -190,7 +183,7 @@ class ConfigManager:
             pass
         try:
             for role in ctx.author.roles:
-                if role.id in ignored['roles']:
+                if role.id in ignored["roles"]:
                     return True
         except KeyError:
             pass
@@ -226,7 +219,7 @@ class Config(Cog):
     # async def on_guild_join(self, guild):
     #     self.config.check_config(guild)
 
-    @commands.group(name='config')
+    @commands.group(name="config")
     @checks.edit_config()
     async def configure_bot(self, ctx):
         """Edit this guild's configuration."""
@@ -234,7 +227,10 @@ class Config(Cog):
             s = "**Current Config:**```\n"
             config = False
             for key, value in self.config.get_config(ctx.guild).items():
-                if key not in ('name', 'guildID', 'dataType') and value != DEFAULT_CONFIG[key]:
+                if (
+                    key not in ("name", "guildID", "dataType")
+                    and value != DEFAULT_CONFIG[key]
+                ):
                     config = True
                     s += f"{key}: {value}\n"
             s += "```"
@@ -257,7 +253,7 @@ class Config(Cog):
             await ctx.send(f"{red_tick} Prefix can only be up to 5 characters!")
             return
         # config['prefix'] = new_prefix
-        self.config.edit_section(ctx.guild.id, 'prefix', new_prefix)
+        self.config.edit_section(ctx.guild.id, "prefix", new_prefix)
         await ctx.send(f"{green_tick} Prefix set to `{new_prefix}`")
 
     @configure_bot.command()
@@ -265,36 +261,48 @@ class Config(Cog):
     async def ignore(self, ctx, target: Union[TextChannel, Member, Role]):
         """Sets bot to ignore commands by certain users, users with certain roles, or in a certain channel."""
         config = self.config.get_config(ctx.guild)
-        ignored = config['ignored']
+        ignored = config["ignored"]
         if ignored is None:
             ignored = dict()
-            ignored.update(DEFAULT_CONFIG['ignored'])
+            ignored.update(DEFAULT_CONFIG["ignored"])
 
         if isinstance(target, TextChannel):
-            if target.id in ignored['channels']:
-                await ctx.send(f"{red_tick} Channel `{target.name}` is already in ignore list!")
+            if target.id in ignored["channels"]:
+                await ctx.send(
+                    f"{red_tick} Channel `{target.name}` is already in ignore list!"
+                )
                 return
-            ignored['channels'].append(target.id)
-            self.config.edit_section(ctx.guild, 'ignored', ignored)
-            await ctx.send(f"{green_tick} I will ignore channel `{target.name}` in this guild.")
+            ignored["channels"].append(target.id)
+            self.config.edit_section(ctx.guild, "ignored", ignored)
+            await ctx.send(
+                f"{green_tick} I will ignore channel `{target.name}` in this guild."
+            )
             return
 
         elif isinstance(target, Member):
-            if target.id in ignored['users']:
-                await ctx.send(f"{red_tick} User `{target.name}` is already in ignore list!")
+            if target.id in ignored["users"]:
+                await ctx.send(
+                    f"{red_tick} User `{target.name}` is already in ignore list!"
+                )
                 return
-            ignored['users'].append(target.id)
-            self.config.edit_section(ctx.guild, 'ignored', ignored)
-            await ctx.send(f"{green_tick} I will ignore user `{target.name}` in this guild.")
+            ignored["users"].append(target.id)
+            self.config.edit_section(ctx.guild, "ignored", ignored)
+            await ctx.send(
+                f"{green_tick} I will ignore user `{target.name}` in this guild."
+            )
             return
 
         elif isinstance(target, Role):
-            if target.id in ignored['roles']:
-                await ctx.send(f"{red_tick} Role `{target.name}` is already in ignore list!")
+            if target.id in ignored["roles"]:
+                await ctx.send(
+                    f"{red_tick} Role `{target.name}` is already in ignore list!"
+                )
                 return
-            ignored['roles'].append(target.id)
-            self.config.edit_section(ctx.guild, 'ignored', ignored)
-            await ctx.send(f"{green_tick} I will ignore role `{target.name}` in this guild.")
+            ignored["roles"].append(target.id)
+            self.config.edit_section(ctx.guild, "ignored", ignored)
+            await ctx.send(
+                f"{green_tick} I will ignore role `{target.name}` in this guild."
+            )
             return
 
     @configure_bot.command()
@@ -302,36 +310,48 @@ class Config(Cog):
     async def unignore(self, ctx, target: Union[TextChannel, Member, Role]):
         """Removes a user, role, or channel from this guild's ignored list."""
         config = self.config.get_config(ctx.guild)
-        ignored = config['ignored']
+        ignored = config["ignored"]
         if ignored is None:
             ignored = dict()
-            ignored.update(DEFAULT_CONFIG['ignored'])
+            ignored.update(DEFAULT_CONFIG["ignored"])
 
         if isinstance(target, TextChannel):
-            if target.id not in ignored['channels']:
-                await ctx.send(f"{red_tick} Channel `{target.name}` is not in ignore list!")
+            if target.id not in ignored["channels"]:
+                await ctx.send(
+                    f"{red_tick} Channel `{target.name}` is not in ignore list!"
+                )
                 return
-            ignored['channels'].remove(target.id)
-            self.config.edit_section(ctx.guild, 'ignored', ignored)
-            await ctx.send(f"{green_tick} I will no longer ignore channel `{target.name}` in this guild.")
+            ignored["channels"].remove(target.id)
+            self.config.edit_section(ctx.guild, "ignored", ignored)
+            await ctx.send(
+                f"{green_tick} I will no longer ignore channel `{target.name}` in this guild."
+            )
             return
 
         elif isinstance(target, Member):
-            if target.id not in ignored['users']:
-                await ctx.send(f"{red_tick} User `{target.name}` is not in ignore list!")
+            if target.id not in ignored["users"]:
+                await ctx.send(
+                    f"{red_tick} User `{target.name}` is not in ignore list!"
+                )
                 return
-            ignored['users'].remove(target.id)
-            self.config.edit_section(ctx.guild, 'ignored', ignored)
-            await ctx.send(f"{green_tick} I will no longer ignore user `{target.name}` in this guild.")
+            ignored["users"].remove(target.id)
+            self.config.edit_section(ctx.guild, "ignored", ignored)
+            await ctx.send(
+                f"{green_tick} I will no longer ignore user `{target.name}` in this guild."
+            )
             return
 
         elif isinstance(target, Role):
-            if target.id not in ignored['roles']:
-                await ctx.send(f"{red_tick} Role `{target.name}` is not in ignore list!")
+            if target.id not in ignored["roles"]:
+                await ctx.send(
+                    f"{red_tick} Role `{target.name}` is not in ignore list!"
+                )
                 return
-            ignored['roles'].remove(target.id)
-            self.config.edit_section(ctx.guild, 'ignored', ignored)
-            await ctx.send(f"{green_tick} I will no longer ignore role `{target.name}` in this guild.")
+            ignored["roles"].remove(target.id)
+            self.config.edit_section(ctx.guild, "ignored", ignored)
+            await ctx.send(
+                f"{green_tick} I will no longer ignore role `{target.name}` in this guild."
+            )
             return
 
     @configure_bot.command()
@@ -339,30 +359,40 @@ class Config(Cog):
     async def disable(self, ctx, target: Union[Module, Command]):
         """Disables a command (or every command in a module) in this guild."""
         if target and "config" in target.qualified_name.lower():
-            await ctx.send(f"{red_tick} You can't disable the Config module or any of its commands!")
+            await ctx.send(
+                f"{red_tick} You can't disable the Config module or any of its commands!"
+            )
             return
         config = self.config.get_config(ctx.guild)
-        disabled = config['disabled']
+        disabled = config["disabled"]
         if disabled is None:
             disabled = dict()
-            disabled.update(DEFAULT_CONFIG['disabled'])
+            disabled.update(DEFAULT_CONFIG["disabled"])
 
         if isinstance(target, commands.Cog):
-            if target.qualified_name in disabled['modules']:
-                await ctx.send(f"{red_tick} Module `{target.qualified_name}` is already disabled!")
+            if target.qualified_name in disabled["modules"]:
+                await ctx.send(
+                    f"{red_tick} Module `{target.qualified_name}` is already disabled!"
+                )
                 return
-            disabled['modules'].append(target.qualified_name)
-            self.config.edit_section(ctx.guild, 'disabled', disabled)
-            await ctx.send(f"{green_tick} Disabled module `{target.qualified_name}` for this guild.")
+            disabled["modules"].append(target.qualified_name)
+            self.config.edit_section(ctx.guild, "disabled", disabled)
+            await ctx.send(
+                f"{green_tick} Disabled module `{target.qualified_name}` for this guild."
+            )
             return
 
         elif isinstance(target, commands.Command):
-            if target.qualified_name in disabled['commands']:
-                await ctx.send(f"{red_tick} Command `{target.qualified_name}` is already disabled!")
+            if target.qualified_name in disabled["commands"]:
+                await ctx.send(
+                    f"{red_tick} Command `{target.qualified_name}` is already disabled!"
+                )
                 return
-            disabled['commands'].append(target.qualified_name)
-            self.config.edit_section(ctx.guild, 'disabled', disabled)
-            await ctx.send(f"{green_tick} Disabled command `{target.qualified_name}` for this guild.")
+            disabled["commands"].append(target.qualified_name)
+            self.config.edit_section(ctx.guild, "disabled", disabled)
+            await ctx.send(
+                f"{green_tick} Disabled command `{target.qualified_name}` for this guild."
+            )
             return
 
     @configure_bot.command()
@@ -370,37 +400,45 @@ class Config(Cog):
     async def enable(self, ctx, target: Union[Module, Command]):
         """Enables a disabled command (or every command in a module) in this guild."""
         config = self.config.get_config(ctx.guild)
-        disabled = config['disabled']
+        disabled = config["disabled"]
         if disabled is None:
             disabled = dict()
-            disabled.update(DEFAULT_CONFIG['disabled'])
+            disabled.update(DEFAULT_CONFIG["disabled"])
 
         if isinstance(target, commands.Cog):
-            if target.qualified_name not in disabled['modules']:
-                await ctx.send(f"{red_tick} Module `{target.qualified_name}` is not disabled!")
+            if target.qualified_name not in disabled["modules"]:
+                await ctx.send(
+                    f"{red_tick} Module `{target.qualified_name}` is not disabled!"
+                )
                 return
-            disabled['modules'].remove(target.qualified_name)
-            self.config.edit_section(ctx.guild, 'disabled', disabled)
-            await ctx.send(f"{green_tick} Enabled module `{target.qualified_name}` for this guild.")
+            disabled["modules"].remove(target.qualified_name)
+            self.config.edit_section(ctx.guild, "disabled", disabled)
+            await ctx.send(
+                f"{green_tick} Enabled module `{target.qualified_name}` for this guild."
+            )
             return
 
         elif isinstance(target, commands.Command):
-            if target.qualified_name not in disabled['commands']:
-                await ctx.send(f"{red_tick} Command `{target.qualified_name}` is not disabled!")
+            if target.qualified_name not in disabled["commands"]:
+                await ctx.send(
+                    f"{red_tick} Command `{target.qualified_name}` is not disabled!"
+                )
                 return
-            disabled['commands'].remove(target.qualified_name)
-            self.config.edit_section(ctx.guild, 'disabled', disabled)
-            await ctx.send(f"{green_tick} Enabled command `{target.qualified_name}` for this guild.")
+            disabled["commands"].remove(target.qualified_name)
+            self.config.edit_section(ctx.guild, "disabled", disabled)
+            await ctx.send(
+                f"{green_tick} Enabled command `{target.qualified_name}` for this guild."
+            )
             return
 
-    @configure_bot.group(aliases=['ar'])
+    @configure_bot.group(aliases=["ar"])
     @checks.edit_config()
     async def autorole(self, ctx):
         """Edit this guild's autoroles."""
         if ctx.invoked_subcommand is None:
             await ctx.send_help(self.autorole)
 
-    @autorole.command(name='add', aliases=['a'])
+    @autorole.command(name="add", aliases=["a"])
     @checks.edit_config()
     async def autorole_add(self, ctx, role: discord.Role):
         """Adds a role to autorole list."""
@@ -408,20 +446,22 @@ class Config(Cog):
             await ctx.send("Invalid role.")
 
         config = self.config.get_config(ctx.guild)
-        utilities = config['utilities']
+        utilities = config["utilities"]
         if utilities is None:
             utilities = dict()
-            utilities.update(DEFAULT_CONFIG['utilities'])
+            utilities.update(DEFAULT_CONFIG["utilities"])
 
-        if role.id in utilities['autorole']:
-            await ctx.send(f"{red_tick} Role `{role.name}` is already a configured autorole!")
+        if role.id in utilities["autorole"]:
+            await ctx.send(
+                f"{red_tick} Role `{role.name}` is already a configured autorole!"
+            )
 
         else:
-            utilities['autorole'].append(role.id)
-            self.config.edit_section(ctx.guild, 'utilities', utilities)
+            utilities["autorole"].append(role.id)
+            self.config.edit_section(ctx.guild, "utilities", utilities)
             await ctx.send(f"{green_tick} Added `{role.name}` to autoroles.")
 
-    @autorole.command(name='remove', aliases=['rm', 'r'])
+    @autorole.command(name="remove", aliases=["rm", "r"])
     @checks.edit_config()
     async def autorole_remove(self, ctx, role: discord.Role):
         """Removes a role from autorole list."""
@@ -429,27 +469,29 @@ class Config(Cog):
             await ctx.send("Invalid role.")
 
         config = self.config.get_config(ctx.guild)
-        utilities = config['utilities']
+        utilities = config["utilities"]
         if utilities is None:
             utilities = dict()
-            utilities.update(DEFAULT_CONFIG['utilities'])
+            utilities.update(DEFAULT_CONFIG["utilities"])
 
-        if role.id not in utilities['autorole']:
-            await ctx.send(f"{red_tick} Role `{role.name}` is not a configured autorole!")
+        if role.id not in utilities["autorole"]:
+            await ctx.send(
+                f"{red_tick} Role `{role.name}` is not a configured autorole!"
+            )
 
         else:
-            utilities['autorole'].remove(role.id)
-            self.config.edit_section(ctx.guild, 'utilities', utilities)
+            utilities["autorole"].remove(role.id)
+            self.config.edit_section(ctx.guild, "utilities", utilities)
             await ctx.send(f"{green_tick} Removed `{role.name}` from autoroles.")
 
-    @configure_bot.group(aliases=['ps'])
+    @configure_bot.group(aliases=["ps"])
     @checks.edit_config()
     async def persist(self, ctx):
         """Edit role persist for this guild."""
         if ctx.invoked_subcommand is None:
             await ctx.send_help(self.persist)
 
-    @persist.command(name='add', aliases=['a'])
+    @persist.command(name="add", aliases=["a"])
     @checks.edit_config()
     async def persist_add(self, ctx, role: discord.Role):
         """Adds a role to role persist."""
@@ -457,20 +499,22 @@ class Config(Cog):
             await ctx.send("Invalid role.")
 
         config = self.config.get_config(ctx.guild)
-        utilities = config['utilities']
+        utilities = config["utilities"]
         if utilities is None:
             utilities = dict()
-            utilities.update(DEFAULT_CONFIG['utilities'])
+            utilities.update(DEFAULT_CONFIG["utilities"])
 
-        if role.id in utilities['persist']:
-            await ctx.send(f"{red_tick} Role `{role.name}` is already a configured persist role!")
+        if role.id in utilities["persist"]:
+            await ctx.send(
+                f"{red_tick} Role `{role.name}` is already a configured persist role!"
+            )
 
         else:
-            utilities['persist'].append(role.id)
-            self.config.edit_section(ctx.guild, 'utilities', utilities)
+            utilities["persist"].append(role.id)
+            self.config.edit_section(ctx.guild, "utilities", utilities)
             await ctx.send(f"{green_tick} Added `{role.name}` to persist roles.")
 
-    @persist.command(name='remove', aliases=['rm', 'r'])
+    @persist.command(name="remove", aliases=["rm", "r"])
     @checks.edit_config()
     async def persist_remove(self, ctx, role: discord.Role):
         """Removes a role from role persist."""
@@ -478,17 +522,19 @@ class Config(Cog):
             await ctx.send("Invalid role.")
 
         config = self.config.get_config(ctx.guild)
-        utilities = config['utilities']
+        utilities = config["utilities"]
         if utilities is None:
             utilities = dict()
-            utilities.update(DEFAULT_CONFIG['utilities'])
+            utilities.update(DEFAULT_CONFIG["utilities"])
 
-        if role.id not in utilities['persist']:
-            await ctx.send(f"{red_tick} Role `{role.name}` is not a configured persist role!")
+        if role.id not in utilities["persist"]:
+            await ctx.send(
+                f"{red_tick} Role `{role.name}` is not a configured persist role!"
+            )
 
         else:
-            utilities['persist'].remove(role.id)
-            self.config.edit_section(ctx.guild, 'utilities', utilities)
+            utilities["persist"].remove(role.id)
+            self.config.edit_section(ctx.guild, "utilities", utilities)
             await ctx.send(f"{green_tick} Removed `{role.name}` from persist roles.")
 
 

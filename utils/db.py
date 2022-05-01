@@ -1,12 +1,11 @@
 import logging
+from datetime import datetime
 
 import databases as db
 import sqlalchemy as sql
 from sqlalchemy import select
-from datetime import datetime
 
-
-logger = logging.getLogger('utils.db')
+logger = logging.getLogger("utils.db")
 
 
 ############
@@ -51,7 +50,7 @@ class Database:
 
     async def _query_fetch_config(self, guild_id):
         query = r"SELECT * FROM config WHERE guild_id = :guild_id;"
-        return await self.conn.fetch_one(query, {'guild_id': guild_id})
+        return await self.conn.fetch_one(query, {"guild_id": guild_id})
 
     async def fetch_config(self, guild_id):
         if self.in_config_cache(guild_id):
@@ -69,7 +68,7 @@ class Database:
 
     async def update_config_prefix(self, guild_id, prefix):
         query = "UPDATE config SET prefix = :prefix WHERE guild_id = :guild_id"
-        return await self.conn.execute(query, {'guild_id': guild_id, 'prefix': prefix})
+        return await self.conn.execute(query, {"guild_id": guild_id, "prefix": prefix})
 
     # MODLOG STUFF
 
@@ -106,55 +105,55 @@ class Row:
 
 class ConfigRow(Row):
     def __init__(self, record):
-        self.guild_id = record['guild_id']
-        self.muted_role = record['muted_role']
-        self.admin_role = record['admin_role']
-        self.mod_role = record['mod_role']
-        self.ignored_users = record['ignored_users']
-        self.ignored_roles = record['ignored_roles']
-        self.ignored_channels = record['ignored_channels']
-        self.autoroles_user = record['autoroles_user']
-        self.autoroles_bot = record['autoroles_bot']
-        self.role_persist = record['role_persist']
-        self.modlog_channel = record['modlog_channel']
-        self.prefix = record['prefix']
-        
-        
+        self.guild_id = record["guild_id"]
+        self.muted_role = record["muted_role"]
+        self.admin_role = record["admin_role"]
+        self.mod_role = record["mod_role"]
+        self.ignored_users = record["ignored_users"]
+        self.ignored_roles = record["ignored_roles"]
+        self.ignored_channels = record["ignored_channels"]
+        self.autoroles_user = record["autoroles_user"]
+        self.autoroles_bot = record["autoroles_bot"]
+        self.role_persist = record["role_persist"]
+        self.modlog_channel = record["modlog_channel"]
+        self.prefix = record["prefix"]
+
+
 class InfractionsRow(Row):
     def __init__(self, record):
-        self.global_id = record['global_id']
-        self.guild_id = record['guild_id']
-        self.infraction_id = record['infraction_id']
-        self.timestamp = record['timestamp']
-        self.user_id = record['user_id']
-        self.mod_id = record['mod_id']
-        self.infraction_type = record['infraction_type']
-        self.reason = record['reason']
-        self.message_id = record['message_id']
-        
-        
+        self.global_id = record["global_id"]
+        self.guild_id = record["guild_id"]
+        self.infraction_id = record["infraction_id"]
+        self.timestamp = record["timestamp"]
+        self.user_id = record["user_id"]
+        self.mod_id = record["mod_id"]
+        self.infraction_type = record["infraction_type"]
+        self.reason = record["reason"]
+        self.message_id = record["message_id"]
+
+
 class LastInfractionIDRow(Row):
     def __init__(self, record):
-        self.guild_id = record['guild_id']
-        self.last_infraction_id = record['last_infraction_id']
-        
+        self.guild_id = record["guild_id"]
+        self.last_infraction_id = record["last_infraction_id"]
+
 
 class RolePersistRow(Row):
     def __init__(self, record):
-        self.guild_id = record['guild_id']
-        self.user_id = record['user_id']
-        self.roles = record['roles']
-        
+        self.guild_id = record["guild_id"]
+        self.user_id = record["user_id"]
+        self.roles = record["roles"]
+
 
 class UserHistoryRow(Row):
     def __init__(self, record):
-        self.guild_id = record['guild_id']
-        self.user_id = record['user_id']
-        self.mute = record['mute']
-        self.kick = record['kick']
-        self.ban = record['ban']
-        self.unmute = record['unmute']
-        self.unban = record['unban']
+        self.guild_id = record["guild_id"]
+        self.user_id = record["user_id"]
+        self.mute = record["mute"]
+        self.kick = record["kick"]
+        self.ban = record["ban"]
+        self.unmute = record["unmute"]
+        self.unban = record["unban"]
 
 
 #############
@@ -165,54 +164,59 @@ metadata = sql.MetaData()
 
 
 config = sql.Table(
-    'config', metadata,
-    sql.Column('guild_id', sql.BIGINT, primary_key=True),
-    sql.Column('muted_role', sql.BIGINT),
-    sql.Column('admin_role', sql.BIGINT),
-    sql.Column('mod_role', sql.BIGINT),
-    sql.Column('ignored_users', sql.ARRAY(sql.BIGINT)),
-    sql.Column('ignored_roles', sql.ARRAY(sql.BIGINT)),
-    sql.Column('ignored_channels', sql.ARRAY(sql.BIGINT)),
-    sql.Column('autoroles_user', sql.ARRAY(sql.BIGINT)),
-    sql.Column('autoroles_bot', sql.ARRAY(sql.BIGINT)),
-    sql.Column('role_persist', sql.ARRAY(sql.BIGINT)),
-    sql.Column('modlog_channel', sql.BIGINT),
-    sql.Column('prefix', sql.TEXT),
+    "config",
+    metadata,
+    sql.Column("guild_id", sql.BIGINT, primary_key=True),
+    sql.Column("muted_role", sql.BIGINT),
+    sql.Column("admin_role", sql.BIGINT),
+    sql.Column("mod_role", sql.BIGINT),
+    sql.Column("ignored_users", sql.ARRAY(sql.BIGINT)),
+    sql.Column("ignored_roles", sql.ARRAY(sql.BIGINT)),
+    sql.Column("ignored_channels", sql.ARRAY(sql.BIGINT)),
+    sql.Column("autoroles_user", sql.ARRAY(sql.BIGINT)),
+    sql.Column("autoroles_bot", sql.ARRAY(sql.BIGINT)),
+    sql.Column("role_persist", sql.ARRAY(sql.BIGINT)),
+    sql.Column("modlog_channel", sql.BIGINT),
+    sql.Column("prefix", sql.TEXT),
 )
 
 infractions = sql.Table(
-    'infractions', metadata,
-    sql.Column('global_id', sql.BIGINT),
-    sql.Column('guild_id', sql.BIGINT, primary_key=True),
-    sql.Column('infraction_id', sql.BIGINT, primary_key=True),
-    sql.Column('timestamp', sql.TIMESTAMP, default=datetime.now),
-    sql.Column('user_id', sql.BIGINT),
-    sql.Column('mod_id', sql.BIGINT),
-    sql.Column('infraction_type', sql.TEXT),
-    sql.Column('reason', sql.TEXT),
-    sql.Column('message_id', sql.BIGINT),
+    "infractions",
+    metadata,
+    sql.Column("global_id", sql.BIGINT),
+    sql.Column("guild_id", sql.BIGINT, primary_key=True),
+    sql.Column("infraction_id", sql.BIGINT, primary_key=True),
+    sql.Column("timestamp", sql.TIMESTAMP, default=datetime.now),
+    sql.Column("user_id", sql.BIGINT),
+    sql.Column("mod_id", sql.BIGINT),
+    sql.Column("infraction_type", sql.TEXT),
+    sql.Column("reason", sql.TEXT),
+    sql.Column("message_id", sql.BIGINT),
 )
 
 last_infraction_id = sql.Table(
-    'last_infraction_id', metadata,
-    sql.Column('guild_id', sql.BIGINT, primary_key=True),
-    sql.Column('last_infraction_id', sql.BIGINT),
+    "last_infraction_id",
+    metadata,
+    sql.Column("guild_id", sql.BIGINT, primary_key=True),
+    sql.Column("last_infraction_id", sql.BIGINT),
 )
 
 role_persist = sql.Table(
-    'role_persist', metadata,
-    sql.Column('guild_id', sql.BIGINT, primary_key=True),
-    sql.Column('user_id', sql.BIGINT, primary_key=True),
-    sql.Column('roles', sql.ARRAY(sql.BIGINT)),
+    "role_persist",
+    metadata,
+    sql.Column("guild_id", sql.BIGINT, primary_key=True),
+    sql.Column("user_id", sql.BIGINT, primary_key=True),
+    sql.Column("roles", sql.ARRAY(sql.BIGINT)),
 )
 
 user_history = sql.Table(
-    'user_history', metadata,
-    sql.Column('guild_id', sql.BIGINT, primary_key=True),
-    sql.Column('user_id', sql.BIGINT, primary_key=True),
-    sql.Column('mute', sql.ARRAY(sql.BIGINT)),
-    sql.Column('kick', sql.ARRAY(sql.BIGINT)),
-    sql.Column('ban', sql.ARRAY(sql.BIGINT)),
-    sql.Column('unmute', sql.ARRAY(sql.BIGINT)),
-    sql.Column('unban', sql.ARRAY(sql.BIGINT)),
+    "user_history",
+    metadata,
+    sql.Column("guild_id", sql.BIGINT, primary_key=True),
+    sql.Column("user_id", sql.BIGINT, primary_key=True),
+    sql.Column("mute", sql.ARRAY(sql.BIGINT)),
+    sql.Column("kick", sql.ARRAY(sql.BIGINT)),
+    sql.Column("ban", sql.ARRAY(sql.BIGINT)),
+    sql.Column("unmute", sql.ARRAY(sql.BIGINT)),
+    sql.Column("unban", sql.ARRAY(sql.BIGINT)),
 )

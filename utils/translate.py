@@ -1,8 +1,12 @@
-from google.oauth2.service_account import Credentials
-from google.cloud.translate_v3.services.translation_service import TranslationServiceAsyncClient
-from google.cloud.translate_v3.types.translation_service import TranslateTextRequest, GetSupportedLanguagesRequest
-
 from auth import CLOUD_CREDS_FILE, CLOUD_PROJ_ID
+from google.cloud.translate_v3.services.translation_service import (
+    TranslationServiceAsyncClient,
+)
+from google.cloud.translate_v3.types.translation_service import (
+    GetSupportedLanguagesRequest,
+    TranslateTextRequest,
+)
+from google.oauth2.service_account import Credentials
 
 
 class Translate:
@@ -30,7 +34,7 @@ class Translate:
 
         return self.lang_cache.get(arg.lower())
 
-    async def translate(self, text, lang='en'):
+    async def translate(self, text, lang="en"):
         result = await self.client.translate_text(
             TranslateTextRequest(
                 **{

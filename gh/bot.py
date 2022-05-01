@@ -1,7 +1,8 @@
 import asyncio
+
 import github
 
-from gh.authorization import new_jwt, new_token, get_installation
+from gh.authorization import get_installation, new_jwt, new_token
 
 
 class GithubBot:

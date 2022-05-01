@@ -1,15 +1,13 @@
-import discord
 import aiohttp
 import aionasa
-
-from discord.ext import commands
-from discord.ext import tasks
+import discord
 from aionasa.utils import date_strptime
-
 from auth import NASA_API_KEY
-from utils.constants import red_tick
-from bulbe.settings import Settings
+from discord.ext import commands, tasks
+
 from bulbe.base import Cog
+from bulbe.settings import Settings
+from utils.constants import red_tick
 
 
 class NASA(Cog):
@@ -36,19 +34,26 @@ class NASA(Cog):
             self.running = True
 
     @commands.command()
-    async def apod(self, ctx, *, date='today'):
+    async def apod(self, ctx, *, date="today"):
         """Astronomy picture of the day. Date format should be mm-dd-yyyy, mm/dd/yyyy."""
         try:
             date = date_strptime(date)
         except ValueError:
-            await ctx.send(f"{red_tick} Error converting date. Please make sure you're using a supported format.")
+            await ctx.send(
+                f"{red_tick} Error converting date. Please make sure you're using a supported format."
+            )
             return
         picture = await self.apod.get(date)
         title = picture.title
         explanation = picture.explanation
         site_url = picture.html_url
         img_url = picture.hdurl
-        embed = discord.Embed(title=title, description=explanation, url=site_url, color=Settings.embed_color).set_image(url=img_url)
+        embed = discord.Embed(
+            title=title,
+            description=explanation,
+            url=site_url,
+            color=Settings.embed_color,
+        ).set_image(url=img_url)
         await ctx.send(embed=embed)
 
     @tasks.loop(minutes=1)
@@ -65,13 +70,18 @@ class NASA(Cog):
         explanation = picture.explanation
         site_url = picture.html_url
         img_url = picture.hdurl
-        embed = discord.Embed(title=title, description=explanation, url=site_url, color=Settings.embed_color).set_image(url=img_url)
+        embed = discord.Embed(
+            title=title,
+            description=explanation,
+            url=site_url,
+            color=Settings.embed_color,
+        ).set_image(url=img_url)
         await self.bot.get_channel(827644536263671858).send(content, embed=embed)
 
     async def update_last_apod_date(self, date):
         self.last_apod_date = f"{date.year},{date.month},{date.day}"
         query = r"UPDATE feed_dispatch SET data = :d WHERE name = 'last_apod_date';"
-        await self.bot.db.conn.execute(query, {'d': self.last_apod_date})
+        await self.bot.db.conn.execute(query, {"d": self.last_apod_date})
 
 
 def setup(bot):

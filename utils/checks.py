@@ -11,17 +11,17 @@ async def global_checks(ctx):
         return True
     if ctx.guild is None:
         return False
-    #if ctx.bot.blacklisted(ctx.author.id, ctx.guild.id, ctx.guild.owner.id):
+    # if ctx.bot.blacklisted(ctx.author.id, ctx.guild.id, ctx.guild.owner.id):
     #    try:
     #        await ctx.send("I won't respond to commands from blacklisted users or in blacklisted guilds!")
     #    except discord.Forbidden:
     #        pass
     #    return False
-    #if ctx.bot.config.command_disabled(ctx):  # checks disabled commands/cogs in config
+    # if ctx.bot.config.command_disabled(ctx):  # checks disabled commands/cogs in config
     #    return False
-    #if await config_perm_check(ctx, 'administrator'):  # doesn't ignore admins even if configured to do so
+    # if await config_perm_check(ctx, 'administrator'):  # doesn't ignore admins even if configured to do so
     #    return True
-    #if ctx.bot.config.is_ignored(ctx):  # checks ignored users/channels/roles in config
+    # if ctx.bot.config.is_ignored(ctx):  # checks ignored users/channels/roles in config
     #    return False
     return True
 
@@ -78,7 +78,7 @@ mod_or:
 
 
 async def config_perm_check(ctx, permission):
-    if await bulbe_perm_check(ctx, 'admin'):
+    if await bulbe_perm_check(ctx, "admin"):
         return True
     return False
 
@@ -106,11 +106,13 @@ async def config_perm_check(ctx, permission):
 
 
 async def guild_perm_check(ctx, perms, *, check=all):
-    if await bulbe_perm_check(ctx, 'admin'):
+    if await bulbe_perm_check(ctx, "admin"):
         return True
 
     resolved = ctx.channel.permissions_for(ctx.author)
-    return check(getattr(resolved, name, None) == value for name, value in perms.items())
+    return check(
+        getattr(resolved, name, None) == value for name, value in perms.items()
+    )
 
 
 def edit_config():
@@ -122,11 +124,11 @@ def edit_config():
     """
 
     async def pred(ctx):
-        if await guild_perm_check(ctx, {'administrator': True}):
+        if await guild_perm_check(ctx, {"administrator": True}):
             return True
-        if await bulbe_perm_check(ctx, 'config'):
+        if await bulbe_perm_check(ctx, "config"):
             return True
-        if await config_perm_check(ctx, 'administrator'):
+        if await config_perm_check(ctx, "administrator"):
             return True
         return False
 
@@ -142,11 +144,11 @@ def server_admin():
     """
 
     async def pred(ctx):
-        if await guild_perm_check(ctx, {'administrator': True}):
+        if await guild_perm_check(ctx, {"administrator": True}):
             return True
-        if await bulbe_perm_check(ctx, 'moderator'):
+        if await bulbe_perm_check(ctx, "moderator"):
             return True
-        if await config_perm_check(ctx, 'administrator'):
+        if await config_perm_check(ctx, "administrator"):
             return True
         return False
 
@@ -162,11 +164,11 @@ def server_mod():
     """
 
     async def pred(ctx):
-        if await guild_perm_check(ctx, {'manage_guild': True}):
+        if await guild_perm_check(ctx, {"manage_guild": True}):
             return True
-        if await bulbe_perm_check(ctx, 'moderator'):
+        if await bulbe_perm_check(ctx, "moderator"):
             return True
-        if await config_perm_check(ctx, 'moderator'):
+        if await config_perm_check(ctx, "moderator"):
             return True
         return False
 
@@ -174,7 +176,7 @@ def server_mod():
 
 
 def mod_or_permissions(**perms):
-    perms['manage_guild'] = True
+    perms["manage_guild"] = True
 
     async def predicate(ctx):
         return await check_guild_permissions(ctx, perms, check=any)
@@ -183,7 +185,7 @@ def mod_or_permissions(**perms):
 
 
 def admin_or_permissions(**perms):
-    perms['administrator'] = True
+    perms["administrator"] = True
 
     async def predicate(ctx):
         return await check_guild_permissions(ctx, perms, check=any)
@@ -203,7 +205,9 @@ async def check_guild_permissions(ctx, perms, *, check=all):
         return False
 
     resolved = ctx.author.guild_permissions
-    return check(getattr(resolved, name, None) == value for name, value in perms.items())
+    return check(
+        getattr(resolved, name, None) == value for name, value in perms.items()
+    )
 
 
 def has_guild_permissions(*, check=all, **perms):

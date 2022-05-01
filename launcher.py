@@ -2,20 +2,20 @@ import logging
 from argparse import ArgumentParser
 
 import uvicorn
+from auth import DB_URL_DEV, DB_URL_PROD, TOKEN_DEV, TOKEN_PROD
 
 from bulbe.bot import Bulbe  # bulbe
+
 # from github.app import app  # fastapi app for github integration
 from utils.helpers import setup_logger
-from auth import TOKEN_DEV, TOKEN_PROD, DB_URL_DEV, DB_URL_PROD
 
-
-logger = logging.getLogger('bot.launcher')
+logger = logging.getLogger("bot.launcher")
 
 
 log_levels = {
-    'debug': logging.DEBUG,
-    'info': logging.INFO,
-    'error': logging.ERROR,
+    "debug": logging.DEBUG,
+    "info": logging.INFO,
+    "error": logging.ERROR,
 }
 
 
@@ -24,14 +24,14 @@ def start_discord(args):
     log = args.log
 
     if not log:
-        log = 'debug' if dev else 'info'
+        log = "debug" if dev else "info"
 
     level = log_levels[log]
 
     setup_logger("bot", level)
     setup_logger("cogs", level)
     setup_logger("utils", level)
-    setup_logger('discord', logging.INFO)
+    setup_logger("discord", logging.INFO)
 
     token = TOKEN_DEV if dev else TOKEN_PROD
     db_url = DB_URL_DEV if dev else DB_URL_PROD
@@ -71,9 +71,9 @@ def main():
     parser = ArgumentParser(description="Launch Bulbe Discord or GitHub bot.")
     subcommands = parser.add_subparsers()
 
-    discord = subcommands.add_parser('discord')
-    discord.add_argument('--log')
-    discord.add_argument('--dev', action='store_true')
+    discord = subcommands.add_parser("discord")
+    discord.add_argument("--log")
+    discord.add_argument("--dev", action="store_true")
     discord.set_defaults(execute=start_discord)
 
     # github = subcommands.add_parser('github')
