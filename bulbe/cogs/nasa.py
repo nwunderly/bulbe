@@ -1,6 +1,7 @@
 import aiohttp
 import aionasa
 import discord
+import logging
 from aionasa.utils import date_strptime
 from auth import NASA_API_KEY
 from discord.ext import commands, tasks
@@ -8,6 +9,8 @@ from discord.ext import commands, tasks
 from bulbe.base import Cog
 from bulbe.settings import Settings
 from utils.constants import red_tick
+
+logger = logging.getLogger("cogs.nasa")
 
 
 class NASA(Cog):
@@ -58,11 +61,14 @@ class NASA(Cog):
 
     @tasks.loop(minutes=1)
     async def apod_feed(self):
-        pic = await self.apod.get()
-        date = pic.date
-        if f"{date.year},{date.month},{date.day}" != self.last_apod_date:
-            await self.update_last_apod_date(date)
-            await self.dispatch_apod(pic)
+        try:
+            pic = await self.apod.get()
+            date = pic.date
+            if f"{date.year},{date.month},{date.day}" != self.last_apod_date:
+                await self.update_last_apod_date(date)
+                await self.dispatch_apod(pic)
+        except:
+            logger.exception("Error in apod feed")
 
     async def dispatch_apod(self, picture):
         content = "<@&771796371724173333> New Astronomy Picture of the Day!"
