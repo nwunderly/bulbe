@@ -2,6 +2,7 @@ import inspect
 import io
 import os
 from typing import Union
+from urllib.parse import quote
 
 import aiohttp
 import discord
@@ -145,8 +146,9 @@ class DevTools(Cog):
 
     @commands.command()
     async def wolfram(self, ctx, *, query):
+        query_quoted = quote(query)
         async with self.session.get(
-            f"https://api.wolframalpha.com/v1/simple?appid={WOLFRAM_APP_ID}&i={query}"
+            f"https://api.wolframalpha.com/v1/simple?appid={WOLFRAM_APP_ID}&i={query_quoted}"
         ) as resp:
             try:
                 img = await resp.read()
