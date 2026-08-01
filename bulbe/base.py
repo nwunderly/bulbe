@@ -101,7 +101,7 @@ class BestStarter(commands.AutoShardedBot):
         logger.info("Loading cogs.")
         for cog in cog_names:
             try:
-                self.load_extension(cog)
+                await self.load_extension(cog)
                 # await self.load_cog(cog)
                 logger.info(f"-> Loaded {cog}.")
             except Exception:

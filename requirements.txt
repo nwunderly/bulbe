@@ -14,5 +14,3 @@ boto3
 google-cloud-translate
 google-auth
 aionasa
-github.py
-jwt

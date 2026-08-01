@@ -91,5 +91,5 @@ class NASA(Cog):
         await self.bot.db.conn.execute(query, {"d": self.last_apod_date})
 
 
-def setup(bot):
-    bot.add_cog(NASA(bot))
+async def setup(bot):
+    await bot.add_cog(NASA(bot))

@@ -158,5 +158,5 @@ class DevTools(Cog):
             await ctx.send(file=discord.File(io.BytesIO(img), filename="wolfram.png"))
 
 
-def setup(bot):
-    bot.add_cog(DevTools(bot))
+async def setup(bot):
+    await bot.add_cog(DevTools(bot))

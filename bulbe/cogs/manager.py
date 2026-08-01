@@ -89,5 +89,5 @@ class Manager(Cog):
         await ctx.send(embed=embed)
 
 
-def setup(bot):
-    bot.add_cog(Manager(bot))
+async def setup(bot):
+    await bot.add_cog(Manager(bot))

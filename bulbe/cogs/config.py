@@ -538,5 +538,5 @@ class Config(Cog):
             await ctx.send(f"{green_tick} Removed `{role.name}` from persist roles.")
 
 
-def setup(bot):
-    bot.add_cog(Config(bot))
+async def setup(bot):
+    await bot.add_cog(Config(bot))

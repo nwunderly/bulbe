@@ -313,5 +313,5 @@ class Modlog(Cog):
     #     await ctx.send("NOT YET IMPLEMENTED.")
 
 
-def setup(bot):
-    bot.add_cog(Modlog(bot))
+async def setup(bot):
+    await bot.add_cog(Modlog(bot))

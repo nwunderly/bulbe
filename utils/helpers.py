@@ -16,7 +16,7 @@ def list_by_category(guild):
     return channels
 
 
-def setup_logger(name, level):
+async def setup_logger(name, level):
     _logger = logging.getLogger(name)
     d = datetime.datetime.now()
     time = f"{d.month}-{d.day}_{d.hour}h{d.minute}m"
