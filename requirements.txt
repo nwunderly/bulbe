@@ -4,6 +4,7 @@ PyYaml
 psutil
 databases[postgresql]
 SQLAlchemy
+uvicorn
 google-cloud-translate
 google-auth
 aionasa
