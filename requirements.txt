@@ -4,13 +4,6 @@ PyYaml
 psutil
 databases[postgresql]
 SQLAlchemy
-aiohttp
-fastapi
-starlette==0.13.6
-uvicorn
-itsdangerous
-pydantic
-boto3
 google-cloud-translate
 google-auth
 aionasa

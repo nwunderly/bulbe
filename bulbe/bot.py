@@ -35,6 +35,7 @@ class Bulbe(BestStarter):
             command_prefix=prefix,
             case_insensitive=True,
             description="Best Bot <3",
+            intents=discord.Intents.all(),
             **kwargs,
         )
         self.__token = token
